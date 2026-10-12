@@ -1,3 +1,11 @@
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
@@ -33,6 +41,39 @@ export default async function handler(req, res) {
     return response.json();
   }
 
+  // ฟังก์ชันอัปโหลดรูปภาพ Base64 ขึ้น Supabase Storage
+  async function uploadImagesToSupabase(base64Array, prefix) {
+    if (!Array.isArray(base64Array) || base64Array.length === 0) return [];
+    const uploadedUrls = [];
+
+    for (let i = 0; i < Math.min(base64Array.length, 5); i++) {
+      const base64Str = base64Array[i];
+      const matches = base64Str.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+      if (!matches) continue;
+
+      const contentType = matches[1];
+      const base64Data = matches[2];
+      const buffer = Buffer.from(base64Data, 'base64');
+      const fileName = `${prefix}_${Date.now()}_${i + 1}.jpg`;
+
+      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/property-images/${fileName}`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': contentType,
+          'x-upsert': 'true'
+        },
+        body: buffer
+      });
+
+      if (uploadRes.ok) {
+        uploadedUrls.push(`${SUPABASE_URL}/storage/v1/object/public/property-images/${fileName}`);
+      }
+    }
+    return uploadedUrls;
+  }
+
   async function sendLine(text) {
     if (!LINE_TOKEN || !LINE_GROUP_ID) return;
     await fetch('https://api.line.me/v2/bot/message/push', {
@@ -65,6 +106,11 @@ export default async function handler(req, res) {
 
     if (action === 'saveOwner') {
       const propId = genId('PROP');
+      const uploadedUrls = await uploadImagesToSupabase(data.uploadedFiles, propId);
+      const allImages = [...uploadedUrls];
+      if (data.imagesLink && data.imagesLink.trim() !== '') allImages.push(data.imagesLink.trim());
+      const finalImagesStr = allImages.length > 0 ? allImages.join(' , ') : '-';
+
       await supabaseFetch('inventory', 'POST', {
         prop_id: propId,
         owner_name: data.ownerName,
@@ -76,13 +122,14 @@ export default async function handler(req, res) {
         size_sqm: Number(data.sizeSqm) || 0,
         floor: data.floor || '-',
         price: Number(data.price) || 0,
-        images_link: data.imagesLink || '-',
+        images_link: finalImagesStr,
         status: 'ว่าง (Available)',
         lat: data.lat ? Number(data.lat) : null,
         lng: data.lng ? Number(data.lng) : null
       });
 
-      await sendLine(`🏠 [มีห้องฝากใหม่!]\nรหัส: ${propId}\nคุณ: ${data.ownerName} (${data.ownerContact})\nโครงการ: ${data.projectName} (${data.zone})\nประเภท: ${data.roomType} | ราคา: ${Number(data.price).toLocaleString()} บ.`);
+      const imgText = uploadedUrls.length > 0 ? `\n📷 รูปภาพ: ${uploadedUrls[0]} (รวม ${uploadedUrls.length} รูป)` : (data.imagesLink ? `\n🔗 ลิงก์รูป: ${data.imagesLink}` : '');
+      await sendLine(`🏠 [มีห้องฝากใหม่!]\nรหัส: ${propId}\nคุณ: ${data.ownerName} (${data.ownerContact})\nโครงการ: ${data.projectName} (${data.zone})\nประเภท: ${data.roomType} | ราคา: ${Number(data.price).toLocaleString()} บ.${imgText}`);
       await checkMatching();
       return res.status(200).json({ success: true, id: propId });
     }
@@ -109,6 +156,11 @@ export default async function handler(req, res) {
 
     if (action === 'saveAgent') {
       const coId = genId('CO');
+      const uploadedUrls = await uploadImagesToSupabase(data.uploadedFiles, coId);
+      const allImages = [...uploadedUrls];
+      if (data.imagesLink && data.imagesLink.trim() !== '') allImages.push(data.imagesLink.trim());
+      const finalImagesStr = allImages.length > 0 ? allImages.join(' , ') : '-';
+
       await supabaseFetch('co_agents', 'POST', {
         id: coId,
         agent_name: data.agentName,
@@ -119,13 +171,14 @@ export default async function handler(req, res) {
         project_zone: data.projectZone,
         details: data.details,
         price: Number(data.price) || 0,
-        images_link: data.imagesLink,
+        images_link: finalImagesStr,
         commission_type: data.commissionType,
         lat: data.lat ? Number(data.lat) : null,
         lng: data.lng ? Number(data.lng) : null
       });
 
-      await sendLine(`🤝 [Co-Agent ส่งทรัพย์ใหม่!]\nรหัส: ${coId}\nเอเจนต์: ${data.agentName} (${data.company || 'อิสระ'})\nโทร: ${data.phone} | LINE: ${data.lineId}\nโครงการ: ${data.projectZone} (${data.propType})\nราคา: ${Number(data.price).toLocaleString()} บ.\nคอมมิชชัน: ${data.commissionType}`);
+      const imgText = uploadedUrls.length > 0 ? `\n📷 รูปภาพ: ${uploadedUrls[0]} (รวม ${uploadedUrls.length} รูป)` : (data.imagesLink ? `\n🔗 ลิงก์รูป: ${data.imagesLink}` : '');
+      await sendLine(`🤝 [Co-Agent ส่งทรัพย์ใหม่!]\nรหัส: ${coId}\nเอเจนต์: ${data.agentName} (${data.company || 'อิสระ'})\nโทร: ${data.phone} | LINE: ${data.lineId}\nโครงการ: ${data.projectZone} (${data.propType})\nราคา: ${Number(data.price).toLocaleString()} บ.\nคอมมิชชัน: ${data.commissionType}${imgText}`);
       return res.status(200).json({ success: true, id: coId });
     }
 
@@ -136,9 +189,9 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
-        inventory: (inv || []).map(i => ({ row: i.prop_id, propId: i.prop_id, ownerName: i.owner_name, contact: i.contact, type: i.listing_type, zone: i.zone, project: i.project_name, room: i.room_type, price: i.price, status: i.status })),
+        inventory: (inv || []).map(i => ({ row: i.prop_id, propId: i.prop_id, ownerName: i.owner_name, contact: i.contact, type: i.listing_type, zone: i.zone, project: i.project_name, room: i.room_type, price: i.price, imagesLink: i.images_link, status: i.status })),
         buyers: (buyers || []).map(b => ({ leadId: b.lead_id, buyerName: b.buyer_name, contact: b.contact, type: b.req_listing_type, zone: b.req_zone, room: b.req_room_type, minBudget: b.min_budget, maxBudget: b.max_budget })),
-        coAgents: (agents || []).map(a => ({ id: a.id, agentName: a.agent_name, company: a.company, phone: a.phone, lineId: a.line_id, propType: a.prop_type, projectZone: a.project_zone, details: a.details, price: a.price, commissionType: a.commission_type }))
+        coAgents: (agents || []).map(a => ({ id: a.id, agentName: a.agent_name, company: a.company, phone: a.phone, lineId: a.line_id, propType: a.prop_type, projectZone: a.project_zone, details: a.details, price: a.price, imagesLink: a.images_link, commissionType: a.commission_type }))
       });
     }
 
