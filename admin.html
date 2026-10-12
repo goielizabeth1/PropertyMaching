@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - จัดการอสังหาฯ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Sarabun', sans-serif; } </style>
+</head>
+<body class="bg-slate-100 min-h-screen p-4 sm:p-6">
+
+  <div id="loginBox" class="max-w-md mx-auto mt-16 bg-white p-8 rounded-3xl shadow-xl text-center border border-slate-200">
+    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🔐</div>
+    <h2 class="text-xl font-bold text-slate-800 mb-1">เข้าสู่ระบบผู้ดูแล (Admin)</h2>
+    <p class="text-sm text-slate-500 mb-6">กรอกรหัสผ่านผู้ดูแลระบบเพื่อจัดการฐานข้อมูล</p>
+    
+    <form onsubmit="loginAdmin(event)" class="space-y-4">
+      <input type="password" id="adminPassInput" required placeholder="รหัสผ่านผู้ดูแลระบบ..." 
+        class="w-full p-3.5 border border-slate-300 rounded-xl text-center font-semibold outline-none focus:ring-2 focus:ring-blue-500">
+      <button type="submit" id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-xl shadow-lg transition">
+        เข้าสู่ระบบ
+      </button>
+    </form>
+    <div id="loginError" class="hidden mt-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm p-3 rounded-xl font-medium"></div>
+    <a href="/" class="block mt-6 text-xs text-slate-400 hover:text-slate-600">← กลับหน้าหลักเว็บไซต์</a>
+  </div>
+
+  <div id="dashboardBox" class="max-w-6xl mx-auto hidden space-y-6">
+    <div class="bg-white p-6 rounded-3xl shadow-sm border flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">🛠️ แผงควบคุมระบบอสังหาริมทรัพย์</h1>
+        <a href="/" class="text-xs text-blue-600 hover:underline">← กลับไปหน้าฟอร์มเว็บไซต์หลัก</a>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="switchTab('inv')" id="btnTabInv" class="px-5 py-2.5 rounded-xl font-semibold bg-blue-600 text-white transition">🏠 คลังทรัพย์</button>
+        <button onclick="switchTab('buyer')" id="btnTabBuyer" class="px-5 py-2.5 rounded-xl font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🔍 ลูกค้าหาห้อง</button>
+        <button onclick="switchTab('agent')" id="btnTabAgent" class="px-5 py-2.5 rounded-xl font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🤝 เครือข่ายนายหน้า</button>
+      </div>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-3">
+      <span class="text-lg text-slate-400 pl-2">🔍</span>
+      <input type="text" id="searchInput" oninput="filterData()" placeholder="พิมพ์ค้นหา รหัส, ชื่อโครงการ, โซน, ชื่อคน หรือเบอร์โทร..." class="w-full p-2 text-sm outline-none font-medium">
+    </div>
+
+    <div id="invSection" class="bg-white rounded-3xl shadow-sm border overflow-hidden">
+      <div class="p-4 bg-slate-50 border-b font-semibold text-slate-700 flex justify-between"><span>📋 รายการทรัพย์ฝากขาย / เช่า</span><span id="invCount" class="text-xs text-slate-500"></span></div>
+      <div class="overflow-x-auto"><table class="w-full text-left border-collapse text-sm">
+        <thead><tr class="bg-slate-100 text-slate-600 border-b"><th class="p-3">รหัส</th><th class="p-3">เจ้าของ / ติดต่อ</th><th class="p-3">ประเภท</th><th class="p-3">โครงการ (โซน)</th><th class="p-3">ราคา</th><th class="p-3">สถานะ</th><th class="p-3 text-center">จัดการ</th></tr></thead>
+        <tbody id="invTableBody" class="divide-y"></tbody>
+      </table></div>
+    </div>
+
+    <div id="buyerSection" class="bg-white rounded-3xl shadow-sm border overflow-hidden hidden">
+      <div class="p-4 bg-slate-50 border-b font-semibold text-slate-700 flex justify-between"><span>🎯 รายชื่อลูกค้าค้นหาห้อง</span><span id="buyerCount" class="text-xs text-slate-500"></span></div>
+      <div class="overflow-x-auto"><table class="w-full text-left border-collapse text-sm">
+        <thead><tr class="bg-slate-100 text-slate-600 border-b"><th class="p-3">รหัส</th><th class="p-3">ลูกค้า / ติดต่อ</th><th class="p-3">ความต้องการ</th><th class="p-3">โซน / ประเภทห้อง</th><th class="p-3">งบประมาณ</th><th class="p-3 text-center">จัดการ</th></tr></thead>
+        <tbody id="buyerTableBody" class="divide-y"></tbody>
+      </table></div>
+    </div>
+
+    <div id="agentSection" class="bg-white rounded-3xl shadow-sm border overflow-hidden hidden">
+      <div class="p-4 bg-purple-50 border-b font-semibold text-purple-900 flex justify-between"><span>🤝 รายชื่อทรัพย์ Co-Agent</span><span id="agentCount" class="text-xs text-purple-700"></span></div>
+      <div class="overflow-x-auto"><table class="w-full text-left border-collapse text-sm">
+        <thead><tr class="bg-purple-100/60 text-purple-900 border-b"><th class="p-3">รหัส</th><th class="p-3">ตัวแทน / สังกัด</th><th class="p-3">เบอร์ / LINE</th><th class="p-3">โครงการ</th><th class="p-3">รายละเอียด / ราคา</th><th class="p-3">คอมมิชชัน</th><th class="p-3 text-center">จัดการ</th></tr></thead>
+        <tbody id="agentTableBody" class="divide-y"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <script>
+    let adminData = null;
+    let savedPassword = '';
+
+    function callAdminAPI(action, data = {}) {
+      return fetch('/api/gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, data, adminPassword: savedPassword })
+      }).then(res => res.json());
+    }
+
+    function loginAdmin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnLogin');
+      const err = document.getElementById('loginError');
+      savedPassword = document.getElementById('adminPassInput').value;
+      btn.disabled = true; btn.textContent = '⏳ กำลังตรวจสอบ...';
+      err.classList.add('hidden');
+
+      callAdminAPI('getAdminData').then(res => {
+        if (res.success) {
+          adminData = res;
+          document.getElementById('loginBox').classList.add('hidden');
+          document.getElementById('dashboardBox').classList.remove('hidden');
+          renderTables(adminData.inventory, adminData.buyers, adminData.coAgents);
+        } else {
+          err.textContent = res.message;
+          err.classList.remove('hidden');
+          btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
+        }
+      });
+    }
+
+    function renderTables(invList, buyerList, agentList) {
+      const invBody = document.getElementById('invTableBody'); invBody.innerHTML = '';
+      invList.forEach(item => {
+        invBody.innerHTML += `<tr class="hover:bg-slate-50">
+          <td class="p-3 font-medium text-blue-600">${item.propId}</td>
+          <td class="p-3"><b>${item.ownerName}</b><br><span class="text-xs text-slate-500">${item.contact}</span></td>
+          <td class="p-3">${item.type}</td>
+          <td class="p-3"><b>${item.project}</b><br><span class="text-xs text-slate-500">${item.zone} (${item.room})</span></td>
+          <td class="p-3 font-semibold text-emerald-600">${Number(item.price).toLocaleString()}</td>
+          <td class="p-3">
+            <select onchange="changeStatus('${item.propId}', this.value)" class="p-1.5 border rounded-lg text-xs font-medium">
+              <option value="ว่าง (Available)" ${item.status === 'ว่าง (Available)' ? 'selected' : ''}>🟢 ว่าง</option>
+              <option value="ติดจอง" ${item.status === 'ติดจอง' ? 'selected' : ''}>🟡 ติดจอง</option>
+              <option value="ปิดการขายแล้ว" ${item.status === 'ปิดการขายแล้ว' ? 'selected' : ''}>🔴 ปิดการขายแล้ว</option>
+            </select>
+          </td>
+          <td class="p-3 text-center"><button onclick="deleteRow('${item.propId}', 'inv')" class="p-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs">🗑️ ลบ</button></td>
+        </tr>`;
+      });
+      document.getElementById('invCount').textContent = `ทั้งหมด ${invList.length} รายการ`;
+
+      const buyerBody = document.getElementById('buyerTableBody'); buyerBody.innerHTML = '';
+      buyerList.forEach(item => {
+        buyerBody.innerHTML += `<tr class="hover:bg-slate-50">
+          <td class="p-3 font-medium text-emerald-600">${item.leadId}</td>
+          <td class="p-3"><b>${item.buyerName}</b><br><span class="text-xs text-slate-500">${item.contact}</span></td>
+          <td class="p-3">${item.type}</td>
+          <td class="p-3"><b>${item.zone}</b><br><span class="text-xs text-slate-500">${item.room}</span></td>
+          <td class="p-3 font-semibold">${Number(item.minBudget).toLocaleString()} - ${Number(item.maxBudget).toLocaleString()}</td>
+          <td class="p-3 text-center"><button onclick="deleteRow('${item.leadId}', 'buyer')" class="p-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs">🗑️ ลบ</button></td>
+        </tr>`;
+      });
+      document.getElementById('buyerCount').textContent = `ทั้งหมด ${buyerList.length} รายการ`;
+
+      const agentBody = document.getElementById('agentTableBody'); agentBody.innerHTML = '';
+      agentList.forEach(item => {
+        agentBody.innerHTML += `<tr class="hover:bg-purple-50/30">
+          <td class="p-3 font-medium text-purple-700">${item.id}</td>
+          <td class="p-3"><b>${item.agentName}</b><br><span class="text-xs text-slate-500">${item.company}</span></td>
+          <td class="p-3"><b>${item.phone}</b><br><span class="text-xs text-slate-500">LINE: ${item.lineId}</span></td>
+          <td class="p-3"><b>${item.projectZone}</b><br><span class="text-xs text-purple-600">${item.propType}</span></td>
+          <td class="p-3"><p class="text-xs text-slate-600">${item.details}</p><b class="text-emerald-600">${Number(item.price).toLocaleString()}</b></td>
+          <td class="p-3"><span class="px-2 py-1 rounded text-xs bg-purple-100 text-purple-800">${item.commissionType}</span></td>
+          <td class="p-3 text-center"><button onclick="deleteRow('${item.id}', 'agent')" class="p-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs">🗑️ ลบ</button></td>
+        </tr>`;
+      });
+      document.getElementById('agentCount').textContent = `ทั้งหมด ${agentList.length} รายการ`;
+    }
+
+    function changeStatus(propId, status) {
+      callAdminAPI('updateStatus', { row: propId, status }).then(res => { if(!res.success) alert('อัปเดตสถานะไม่สำเร็จ'); });
+    }
+
+    function deleteRow(id, tabType) {
+      if (!confirm(`ยืนยันการลบรหัส "${id}" หรือไม่?`)) return;
+      callAdminAPI('deleteRecord', { id, tabType }).then(res => {
+        if (res.success) {
+          if (tabType === 'inv') adminData.inventory = adminData.inventory.filter(i => i.propId !== id);
+          else if (tabType === 'buyer') adminData.buyers = adminData.buyers.filter(i => i.leadId !== id);
+          else adminData.coAgents = adminData.coAgents.filter(i => i.id !== id);
+          filterData();
+        }
+      });
+    }
+
+    function filterData() {
+      const k = document.getElementById('searchInput').value.toLowerCase().trim();
+      const fInv = adminData.inventory.filter(i => JSON.stringify(i).toLowerCase().includes(k));
+      const fBuy = adminData.buyers.filter(i => JSON.stringify(i).toLowerCase().includes(k));
+      const fAgt = adminData.coAgents.filter(i => JSON.stringify(i).toLowerCase().includes(k));
+      renderTables(fInv, fBuy, fAgt);
+    }
+
+    function switchTab(tab) {
+      ['invSection', 'buyerSection', 'agentSection'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['btnTabInv', 'btnTabBuyer', 'btnTabAgent'].forEach(id => document.getElementById(id).className = "px-5 py-2.5 rounded-xl font-semibold bg-slate-100 text-slate-600");
+      if (tab === 'inv') { document.getElementById('invSection').classList.remove('hidden'); document.getElementById('btnTabInv').className = "px-5 py-2.5 rounded-xl font-semibold bg-blue-600 text-white"; }
+      else if (tab === 'buyer') { document.getElementById('buyerSection').classList.remove('hidden'); document.getElementById('btnTabBuyer').className = "px-5 py-2.5 rounded-xl font-semibold bg-emerald-600 text-white"; }
+      else { document.getElementById('agentSection').classList.remove('hidden'); document.getElementById('btnTabAgent').className = "px-5 py-2.5 rounded-xl font-semibold bg-purple-600 text-white"; }
+    }
+  </script>
+</body>
+</html>
