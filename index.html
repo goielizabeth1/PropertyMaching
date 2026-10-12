@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ศูนย์รวมอสังหาริมทรัพย์ครบวงจร</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body { font-family: 'Sarabun', sans-serif; transition: font-size 0.2s ease; }
+    .bg-grid-pattern { background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px); background-size: 24px 24px; }
+    .map-container { height: 500px; width: 100%; border-radius: 1rem; z-index: 10; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen py-4 px-3 sm:py-8 sm:px-6">
+
+  <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+    
+    <div id="heroBanner" class="relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 text-white p-6 sm:p-12 bg-grid-pattern overflow-hidden transition-all duration-300">
+      <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <span class="inline-block px-3 py-1 bg-blue-500/30 border border-blue-400/30 rounded-full text-xs text-blue-200 font-medium mb-3">
+            ✨ ระบบจับคู่ทรัพย์อัจฉริยะ & แผนที่ค้นหาจริง 24 ชม.
+          </span>
+          <h1 id="bannerTitle" class="text-2xl sm:text-4xl font-bold tracking-tight leading-tight">ศูนย์รวมอสังหาริมทรัพย์คุณภาพ</h1>
+          <p id="bannerSub" class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
+            บริการรับฝากขาย-ปล่อยเช่า และค้นหาบ้าน คอนโด ทำเลศักยภาพ จับคู่ความต้องการตรงใจด้วยระบบอัตโนมัติ
+          </p>
+        </div>
+        <div class="flex items-center bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 self-end sm:self-auto shrink-0">
+          <span class="text-xs text-slate-300 mr-2">ขนาดอักษร:</span>
+          <button type="button" onclick="setFontSize(14)" class="px-2 py-0.5 text-xs hover:bg-white/20 rounded font-medium">A-</button>
+          <button type="button" onclick="setFontSize(16)" class="px-2 py-0.5 text-sm hover:bg-white/20 rounded font-semibold text-yellow-300">A</button>
+          <button type="button" onclick="setFontSize(19)" class="px-2 py-0.5 text-base hover:bg-white/20 rounded font-bold">A+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 sm:p-6 bg-slate-50 border-b border-slate-200">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <button type="button" onclick="switchView('owner')" id="btnOwner" class="flex items-center p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/50 hover:bg-blue-50 transition group shadow-sm">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-md group-hover:scale-105 shrink-0">🏠</div>
+          <div class="ml-2.5 text-left"><h3 class="font-bold text-slate-800 text-sm">เจ้าของทรัพย์</h3><p class="text-[11px] text-slate-500 hidden sm:block">ฝากขาย/เช่า</p></div>
+        </button>
+        <button type="button" onclick="switchView('buyer')" id="btnBuyer" class="flex items-center p-3 rounded-2xl border-2 border-slate-200 bg-white hover:border-emerald-500 transition group shadow-sm">
+          <div class="w-10 h-10 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center text-lg shadow-md group-hover:scale-105 shrink-0">🔍</div>
+          <div class="ml-2.5 text-left"><h3 class="font-bold text-slate-800 text-sm">ผู้หาห้อง</h3><p class="text-[11px] text-slate-500 hidden sm:block">ค้นหาบ้าน/คอนโด</p></div>
+        </button>
+        <button type="button" onclick="switchView('agent')" id="btnAgent" class="flex items-center p-3 rounded-2xl border-2 border-slate-200 bg-white hover:border-purple-500 transition group shadow-sm">
+          <div class="w-10 h-10 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center text-lg shadow-md group-hover:scale-105 shrink-0">🤝</div>
+          <div class="ml-2.5 text-left"><h3 class="font-bold text-slate-800 text-sm">นายหน้า</h3><p class="text-[11px] text-slate-500 hidden sm:block">Co-Agent</p></div>
+        </button>
+        <button type="button" onclick="switchView('map')" id="btnMap" class="flex items-center p-3 rounded-2xl border-2 border-slate-200 bg-white hover:border-rose-500 transition group shadow-sm">
+          <div class="w-10 h-10 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center text-lg shadow-md group-hover:scale-105 shrink-0">🗺️</div>
+          <div class="ml-2.5 text-left"><h3 class="font-bold text-slate-800 text-sm">แผนที่ค้นหา</h3><p class="text-[11px] text-slate-500 hidden sm:block">ค้นหาใกล้ฉัน</p></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="p-6 sm:p-10">
+      
+      <!-- 1. OWNER FORM -->
+      <form id="ownerForm" onsubmit="submitForm(event, 'saveOwner')" class="space-y-6 block">
+        <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
+        <div class="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 space-y-4">
+          <h2 class="font-semibold text-blue-800 border-b border-blue-200 pb-2 flex items-center"><span class="mr-2">👤</span> ข้อมูลผู้ติดต่อเจ้าของทรัพย์</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">ชื่อผู้ฝาก / เจ้าของห้อง *</label><input type="text" name="ownerName" required placeholder="เช่น คุณสมชาย" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
+            <div><label class="block text-sm font-medium text-slate-700">เบอร์โทร / Line ID *</label><input type="text" name="ownerContact" required placeholder="08x-xxx-xxxx / Line ID" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+          <h2 class="font-semibold text-slate-800 border-b pb-2 flex items-center"><span class="mr-2">🏢</span> รายละเอียดอสังหาริมทรัพย์</h2>
+          <div><label class="block text-sm font-medium text-slate-700">ประเภทประกาศ *</label><select name="listingType" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"><option value="ขาย">ขาย</option><option value="เช่า">เช่า</option><option value="ขายและเช่า">ขายและเช่า</option></select></div>
+          
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <label class="block text-sm font-semibold text-slate-700">📍 โซน / ทำเล / จังหวัด หรือรถไฟฟ้า * <span class="text-xs font-normal text-blue-600">(พิมพ์เอง หรือคลิกปุ่มด้านล่าง)</span></label>
+            <div class="relative"><input type="text" name="zone" id="zoneInputOwner" required placeholder="เช่น กรุงเทพฯ, ชลบุรี, พัทยา, ระยอง หรือ BTS ทองหล่อ..." class="w-full p-3.5 pl-11 bg-slate-50 border border-slate-300 rounded-xl font-medium text-blue-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"><span class="absolute left-3.5 top-3.5 text-lg text-slate-400">🔍</span></div>
+            <div class="pt-1"><p class="text-xs font-semibold text-slate-400 mb-2">📌 จังหวัด / ทำเลยอดนิยม:</p>
+              <div class="flex flex-wrap gap-1.5 text-xs">
+                <button type="button" onclick="setZoneText('กรุงเทพมหานคร', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:text-blue-600 font-medium">🏙️ กรุงเทพมหานคร</button>
+                <button type="button" onclick="setZoneText('นนทบุรี', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:text-blue-600 font-medium">🏡 นนทบุรี</button>
+                <button type="button" onclick="setZoneText('ชลบุรี', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:text-blue-600 font-medium">🏖️ ชลบุรี</button>
+                <button type="button" onclick="setZoneText('พัทยา', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:text-blue-600 font-medium">🌴 พัทยา</button>
+                <button type="button" onclick="setZoneText('ระยอง', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:text-blue-600 font-medium">🏖️ ระยอง</button>
+                <button type="button" onclick="setZoneText('ภูเก็ต', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:text-blue-600 font-medium">🏝️ ภูเก็ต</button>
+                <button type="button" onclick="setZoneText('เชียงใหม่', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:text-blue-600 font-medium">⛰️ เชียงใหม่</button>
+                <button type="button" onclick="setZoneText('สมุทรปราการ', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-blue-500 hover:text-blue-600 font-medium">🏭 สมุทรปราการ</button>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-slate-100"><p class="text-xs font-semibold text-slate-400 mb-2">🚆 โซนรถไฟฟ้า กทม.:</p>
+              <div class="flex flex-wrap gap-1.5 text-xs">
+                <button type="button" onclick="setZoneText('สุขุมวิท-ทองหล่อ', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:border-blue-500 hover:text-blue-600">BTS สุขุมวิท-ทองหล่อ</button>
+                <button type="button" onclick="setZoneText('พระราม 9-รัชดา', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:border-blue-500 hover:text-blue-600">MRT พระราม 9-รัชดา</button>
+                <button type="button" onclick="setZoneText('สาทร-สีลม', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:border-blue-500 hover:text-blue-600">BTS สาทร-สีลม</button>
+                <button type="button" onclick="setZoneText('พญาไท-อารีย์', 'Owner')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:border-blue-500 hover:text-blue-600">BTS พญาไท-อารีย์</button>
+              </div>
+            </div>
+          </div>
+
+          <div><label class="block text-sm font-medium text-slate-700">ชื่อโครงการ *</label><input type="text" name="projectName" required placeholder="เช่น Life Asoke, บ้านเดี่ยวหลังมุม..." class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">ประเภทห้อง *</label><select name="roomType" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"><option value="Studio">Studio</option><option value="1 Bedroom">1 Bedroom</option><option value="2 Bedrooms">2 Bedrooms</option><option value="3+ Bedrooms">3+ Bedrooms</option><option value="บ้านเดี่ยว / ทาวน์โฮม">บ้านเดี่ยว / ทาวน์โฮม</option><option value="ที่ดิน / อื่นๆ">ที่ดิน / อื่นๆ</option></select></div>
+            <div><label class="block text-sm font-medium text-slate-700">ขนาด (ตร.ม./ตร.วา) *</label><input type="number" step="0.1" name="sizeSqm" required placeholder="เช่น 35.5" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
+            <div><label class="block text-sm font-medium text-slate-700">ชั้น / วิว / ข้อมูลเพิ่ม</label><input type="text" name="floor" placeholder="เช่น ชั้น 15 วิวสระ" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
+          </div>
+        </div>
+
+        <div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-slate-700">📍 พิกัดที่ตั้งบนแผนที่ (ช่วยให้ลูกค้าค้นหาเจอได้ง่ายขึ้น)</h3>
+            <p id="ownerLatLngDisplay" class="text-sm text-rose-500 mt-1">ยังไม่ได้ระบุตำแหน่งบนแผนที่</p>
+            <input type="hidden" id="ownerLat" name="lat">
+            <input type="hidden" id="ownerLng" name="lng">
+          </div>
+          <button type="button" onclick="openMapPicker('owner')" class="px-5 py-2.5 bg-slate-800 text-white rounded-xl shadow-md hover:bg-slate-900 font-semibold shrink-0">
+            🗺️ เปิดแผนที่เพื่อปักหมุด
+          </button>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+          <h2 class="font-semibold text-slate-800 border-b pb-2 flex items-center"><span class="mr-2">💰</span> ราคาและรูปภาพ</h2>
+          <div><label class="block text-sm font-medium text-slate-700">ราคาขาย หรือ ค่าเช่าต่อเดือน (บาท) * <span class="text-xs text-red-500">(ใส่เฉพาะตัวเลข)</span></label><input type="number" name="price" required placeholder="เช่น 15000" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-blue-600"></div>
+          <div><label class="block text-sm font-medium text-slate-700">ลิงก์รูปภาพห้อง (Google Drive / DropBox)</label><input type="url" name="imagesLink" placeholder="https://..." class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" required class="mt-1 w-5 h-5 text-blue-600 rounded cursor-pointer shrink-0">
+            <span class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              ข้าพเจ้ายินยอมให้เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคล เพื่อวัตถุประสงค์ในการลงประกาศ จับคู่ทรัพย์ และให้ทีมงานติดต่อกลับตาม <button type="button" onclick="openPdpaModal(event)" class="text-blue-600 underline font-semibold">นโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA)</button> *
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg transition text-lg">📌 ลงประกาศฝากห้องทันที</button>
+      </form>
+
+      <!-- 2. BUYER FORM -->
+      <form id="buyerForm" onsubmit="submitForm(event, 'saveBuyer')" class="space-y-6 hidden">
+        <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
+        <div class="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100 space-y-4">
+          <h2 class="font-semibold text-emerald-800 border-b border-emerald-200 pb-2 flex items-center"><span class="mr-2">👤</span> ข้อมูลผู้ติดต่อผู้หาห้อง</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">ชื่อลูกค้า *</label><input type="text" name="buyerName" required placeholder="ชื่อของคุณ" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"></div>
+            <div><label class="block text-sm font-medium text-slate-700">เบอร์โทร / Line ID ติดต่อกลับ *</label><input type="text" name="buyerContact" required placeholder="08x-xxx-xxxx / Line ID" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+          <h2 class="font-semibold text-slate-800 border-b pb-2 flex items-center"><span class="mr-2">🎯</span> สเปกห้องที่มองหา</h2>
+          <div><label class="block text-sm font-medium text-slate-700">ความต้องการ *</label><select name="reqListingType" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"><option value="เช่า">ต้องการเช่า</option><option value="ขาย">ต้องการซื้อ</option></select></div>
+          
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <label class="block text-sm font-semibold text-slate-700">📍 โซน / ทำเล / จังหวัด ที่สนใจ * <span class="text-xs font-normal text-emerald-600">(พิมพ์เอง หรือคลิกปุ่มด้านล่าง)</span></label>
+            <div class="relative"><input type="text" name="reqZone" id="zoneInputBuyer" required placeholder="เช่น กรุงเทพฯ, ชลบุรี, พัทยา หรือ MRT พระราม 9..." class="w-full p-3.5 pl-11 bg-slate-50 border border-slate-300 rounded-xl font-medium text-emerald-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"><span class="absolute left-3.5 top-3.5 text-lg text-slate-400">🔍</span></div>
+            <div class="pt-1"><p class="text-xs font-semibold text-slate-400 mb-2">📌 จังหวัด / ทำเลยอดนิยม:</p>
+              <div class="flex flex-wrap gap-1.5 text-xs">
+                <button type="button" onclick="setZoneText('กรุงเทพมหานคร', 'Buyer')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 hover:text-emerald-600 font-medium">🏙️ กรุงเทพมหานคร</button>
+                <button type="button" onclick="setZoneText('นนทบุรี', 'Buyer')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 hover:text-emerald-600 font-medium">🏡 นนทบุรี</button>
+                <button type="button" onclick="setZoneText('ชลบุรี', 'Buyer')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 hover:text-emerald-600 font-medium">🏖️ ชลบุรี</button>
+                <button type="button" onclick="setZoneText('พัทยา', 'Buyer')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 hover:text-emerald-600 font-medium">🌴 พัทยา</button>
+                <button type="button" onclick="setZoneText('ระยอง', 'Buyer')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 hover:text-emerald-600 font-medium">🏖️ ระยอง</button>
+                <button type="button" onclick="setZoneText('ภูเก็ต', 'Buyer')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 hover:text-emerald-600 font-medium">🏝️ ภูเก็ต</button>
+                <button type="button" onclick="setZoneText('เชียงใหม่', 'Buyer')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 hover:text-emerald-600 font-medium">⛰️ เชียงใหม่</button>
+                <button type="button" onclick="setZoneText('สมุทรปราการ', 'Buyer')" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:border-emerald-500 hover:text-emerald-600 font-medium">🏭 สมุทรปราการ</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">โครงการที่สนใจเป็นพิเศษ (ถ้ามี)</label><input type="text" name="reqProject" placeholder="เช่น ระบุชื่อคอนโดหรือหมู่บ้าน" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"></div>
+            <div><label class="block text-sm font-medium text-slate-700">ประเภทห้องที่ต้องการ *</label><select name="reqRoomType" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"><option value="Studio">Studio</option><option value="1 Bedroom">1 Bedroom</option><option value="2 Bedrooms">2 Bedrooms</option><option value="3+ Bedrooms">3+ Bedrooms</option><option value="บ้านเดี่ยว / ทาวน์โฮม">บ้านเดี่ยว / ทาวน์โฮม</option><option value="ที่ดิน / อื่นๆ">ที่ดิน / อื่นๆ</option></select></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+          <h2 class="font-semibold text-slate-800 border-b pb-2 flex items-center"><span class="mr-2">💰</span> งบประมาณ และวันที่เข้าอยู่</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">งบต่ำสุด (บาท) *</label><input type="number" name="minBudget" required placeholder="เช่น 10000" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"></div>
+            <div><label class="block text-sm font-medium text-slate-700">งบสูงสุด (บาท) *</label><input type="number" name="maxBudget" required placeholder="เช่น 20000" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-semibold text-emerald-700"></div>
+          </div>
+          <div><label class="block text-sm font-medium text-slate-700">วันที่พร้อมเข้าอยู่</label><input type="date" name="moveInDate" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"></div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" required class="mt-1 w-5 h-5 text-emerald-600 rounded cursor-pointer shrink-0">
+            <span class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              ข้าพเจ้ายินยอมให้เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคล เพื่อวัตถุประสงค์ในการจับคู่บ้าน/คอนโดที่ตรงสเปก และให้ทีมงานติดต่อกลับตาม <button type="button" onclick="openPdpaModal(event)" class="text-emerald-600 underline font-semibold">นโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA)</button> *
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg transition text-lg">🚀 ส่งความต้องการให้ระบบจับคู่ทันที</button>
+      </form>
+
+      <!-- 3. CO-AGENT FORM -->
+      <form id="agentForm" onsubmit="submitForm(event, 'saveAgent')" class="space-y-6 hidden">
+        <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
+        <div class="bg-purple-50/50 p-5 rounded-2xl border border-purple-100 space-y-4">
+          <h2 class="font-semibold text-purple-800 border-b border-purple-200 pb-2 flex items-center"><span class="mr-2">🤝</span> ข้อมูลตัวแทน / เอเจนต์ (Co-Agent)</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">1. ชื่อ - นามสกุล (ตัวแทน) *</label><input type="text" name="agentName" required placeholder="ชื่อ-นามสกุล ของท่าน" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"></div>
+            <div><label class="block text-sm font-medium text-slate-700">2. ชื่อสังกัดบริษัทนายหน้า / อิสระ</label><input type="text" name="company" placeholder="ระบุชื่อบริษัท หรือพิมพ์ อิสระ" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"></div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">3. เบอร์โทรศัพท์ที่ติดต่อได้ *</label><input type="text" name="phone" required placeholder="08x-xxx-xxxx" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"></div>
+            <div><label class="block text-sm font-medium text-slate-700">4. Line ID *</label><input type="text" name="lineId" required placeholder="LINE ID ของท่าน" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+          <h2 class="font-semibold text-slate-800 border-b pb-2 flex items-center"><span class="mr-2">🏢</span> รายละเอียดทรัพย์ที่นำเสนอ</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">5. ประเภทอสังหาฯ *</label><select name="propType" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"><option value="คอนโด">คอนโด</option><option value="บ้านเดี่ยว">บ้านเดี่ยว</option><option value="ทาวน์โฮม">ทาวน์โฮม</option><option value="ที่ดิน">ที่ดิน</option></select></div>
+            <div><label class="block text-sm font-medium text-slate-700">6. ชื่อโครงการ / ทำเล *</label><input type="text" name="projectZone" required placeholder="เช่น คอนโด Life Asoke / พัทยาเหนือ" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"></div>
+          </div>
+          <div><label class="block text-sm font-medium text-slate-700">7. รายละเอียดทรัพย์ (ขนาด, จำนวนห้อง, จุดเด่น) *</label><textarea name="details" rows="3" required placeholder="เช่น ขนาด 35 ตร.ม. 1 ห้องนอน ชั้น 15..." class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"></textarea></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-slate-700">8. ราคาเสนอขาย / ราคาเช่า (บาท) * <span class="text-xs text-red-500">(ใส่เฉพาะตัวเลข)</span></label><input type="number" name="price" required placeholder="เช่น 15000 หรือ 3500000" class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl font-semibold text-purple-700 focus:ring-2 focus:ring-purple-500 outline-none"></div>
+            <div><label class="block text-sm font-medium text-slate-700">9. ลิงก์รูปภาพทรัพย์ (Google Drive) *</label><input type="url" name="imagesLink" required placeholder="https://drive.google.com/..." class="mt-1.5 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"></div>
+          </div>
+        </div>
+
+        <div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-slate-700">📍 พิกัดที่ตั้งทรัพย์บนแผนที่</h3>
+            <p id="agentLatLngDisplay" class="text-sm text-rose-500 mt-1">ยังไม่ได้ระบุตำแหน่งบนแผนที่</p>
+            <input type="hidden" id="agentLat" name="lat">
+            <input type="hidden" id="agentLng" name="lng">
+          </div>
+          <button type="button" onclick="openMapPicker('agent')" class="px-5 py-2.5 bg-slate-800 text-white rounded-xl shadow-md hover:bg-slate-900 font-semibold shrink-0">
+            🗺️ เปิดแผนที่เพื่อปักหมุด
+          </button>
+        </div>
+
+        <div class="bg-purple-50/40 p-5 rounded-2xl border border-purple-100 space-y-3">
+          <h2 class="font-semibold text-purple-900 border-b border-purple-200 pb-2 flex items-center">⚖️ 10. สัดส่วนส่วนแบ่งค่าคอมมิชชั่น (Co-Commission Rate) *</h2>
+          <div class="space-y-2 pt-1 text-sm text-slate-700 font-medium">
+            <label class="flex items-center gap-3 cursor-pointer bg-white p-3 rounded-xl border border-purple-100 hover:border-purple-300"><input type="radio" name="commissionType" value="แบ่งคนละครึ่ง (50% / 50%) จากคอมมิชชั่นรวม" required class="w-4 h-4 text-purple-600 focus:ring-purple-500"><span>แบ่งคนละครึ่ง (50% / 50%) จากคอมมิชชั่นรวม</span></label>
+            <label class="flex items-center gap-3 cursor-pointer bg-white p-3 rounded-xl border border-purple-100 hover:border-purple-300"><input type="radio" name="commissionType" value="ตามตกลงเฉพาะเคส (ระบุเพิ่มเติมทางแชท)" required class="w-4 h-4 text-purple-600 focus:ring-purple-500"><span>ตามตกลงเฉพาะเคส (ระบุเพิ่มเติมทางแชท)</span></label>
+          </div>
+        </div>
+
+        <div class="p-4 bg-purple-50 border border-purple-200 rounded-2xl">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" required class="mt-1 w-5 h-5 text-purple-600 rounded cursor-pointer shrink-0">
+            <span class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+              ข้าพเจ้าขอรับรองว่าทรัพย์สินดังกล่าวข้างต้นเป็นความจริง มีสิทธิ์ในการทำตลาดร่วมกับ Co-Agent และตกลงแบ่งค่าคอมมิชชั่นตามสัดส่วนที่ระบุ พร้อมทั้งยินยอมให้เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลภายใต้ <button type="button" onclick="openPdpaModal(event)" class="text-purple-600 underline font-semibold">นโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA)</button> *
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-2xl shadow-lg transition text-lg">🤝 ส่งข้อมูลลงทะเบียน Co-Agent</button>
+      </form>
+
+      <!-- 4. MAP SEARCH TAB -->
+      <div id="mapSearchTab" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <div class="flex-1 relative">
+            <input type="text" id="mapSearchInput" placeholder="พิมพ์ชื่อจังหวัด, ย่าน, ซอย หรือโครงการ (เช่น ชลบุรี, พัทยา, อโศก)..." class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-rose-500">
+          </div>
+          <button type="button" onclick="searchLocationByName()" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 shadow-md">🔍 ค้นหาทำเล</button>
+          <button type="button" onclick="findNearMe()" class="px-6 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 shadow-md flex items-center justify-center gap-2"><span>📍</span> ใกล้ฉัน</button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <select id="mapFilterType" onchange="filterMap()" class="p-3 border border-slate-300 rounded-xl text-sm font-semibold outline-none flex-1 focus:ring-2 focus:ring-rose-500 bg-white">
+            <option value="all">🏠 ทุกประเภททรัพย์สิน</option>
+            <option value="คอนโด">🏢 คอนโด / Studio / Bedroom</option>
+            <option value="บ้าน">🏡 บ้านเดี่ยว / ทาวน์โฮม</option>
+            <option value="ที่ดิน">⛰️ ที่ดิน</option>
+          </select>
+          <select id="mapFilterRadius" onchange="filterMap()" class="p-3 border border-slate-300 rounded-xl text-sm font-semibold outline-none flex-1 focus:ring-2 focus:ring-rose-500 bg-white">
+            <option value="5">รัศมี 5 กม. (ใกล้เคียง)</option>
+            <option value="10" selected>รัศมี 10 กม. (ในเขตพื้นที่)</option>
+            <option value="20">รัศมี 20 กม.</option>
+            <option value="50">รัศมี 50 กม. (ข้ามอำเภอ)</option>
+            <option value="100">รัศมี 100 กม. (ครอบคลุมทั้งจังหวัด)</option>
+            <option value="9999">🗺️ แสดงทั้งหมดไม่จำกัดระยะทาง</option>
+          </select>
+        </div>
+
+        <div id="mainMap" class="map-container border-2 border-slate-300 shadow-inner"></div>
+        <p id="mapStatusText" class="text-center text-sm font-semibold text-slate-500 mt-2">กำลังโหลดข้อมูลแผนที่...</p>
+      </div>
+
+      <div id="alertBox" class="hidden mt-6 p-4 rounded-2xl text-center font-medium border"></div>
+    </div>
+
+    <div class="bg-slate-50 border-t border-slate-200 py-5 px-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-400">
+      <div>ระบบบริหารจัดการอสังหาริมทรัพย์และจับคู่ทรัพย์อัตโนมัติ © 2026</div>
+      <div>
+        <button type="button" onclick="goToAdmin()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 hover:text-slate-800 font-medium transition shadow-sm">
+          <span>🔒</span><span>สำหรับผู้ดูแลระบบ (Admin)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ปักหมุดแผนที่ -->
+  <div id="mapPickerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-5 flex flex-col h-[80vh]">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-bold text-lg text-slate-800">📍 แตะบนแผนที่เพื่อวางหมุด (ลากขยับหมุดได้)</h3>
+        <button type="button" onclick="closeMapPicker()" class="text-slate-400 text-2xl font-bold">&times;</button>
+      </div>
+      <div id="pickerMap" class="w-full flex-1 rounded-2xl border-2 border-slate-300 relative"></div>
+      <div class="mt-4 flex gap-3">
+        <button type="button" onclick="closeMapPicker()" class="w-1/3 py-3 border border-slate-300 rounded-xl font-bold text-slate-600 bg-slate-50">ยกเลิก</button>
+        <button type="button" onclick="confirmMapPin()" class="w-2/3 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700">✅ ยืนยันพิกัดนี้</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PDPA -->
+  <div id="pdpaModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 max-h-[80vh] flex flex-col border border-slate-200">
+      <div class="flex justify-between items-center border-b border-slate-200 pb-4">
+        <h3 class="font-bold text-lg sm:text-xl text-slate-800">🛡️ นโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h3>
+        <button type="button" onclick="closePdpaModal()" class="text-slate-400 text-2xl font-bold">&times;</button>
+      </div>
+      <div class="overflow-y-auto py-4 space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed pr-2">
+        <p class="font-semibold text-slate-800">1. วัตถุประสงค์ในการเก็บรวบรวมข้อมูล</p>
+        <p>เราเก็บรวบรวมข้อมูลส่วนบุคคลของคุณ เช่น ชื่อ เบอร์โทรศัพท์ LINE ID และรายละเอียดอสังหาริมทรัพย์ เพื่อให้บริการจับคู่ทรัพย์และให้ทีมงานติดต่อกลับเท่านั้น โดยจะไม่เปิดเผยข้อมูลติดต่อของคุณบนหน้าเว็บไซต์สาธารณะ</p>
+        <p class="font-semibold text-slate-800 pt-2">2. การรักษาความปลอดภัยและสิทธิของเจ้าของข้อมูล</p>
+        <p>ข้อมูลของคุณถูกจัดเก็บในฐานข้อมูลที่มีการจำกัดสิทธิ์เข้าถึงเฉพาะผู้ดูแลระบบ คุณสามารถแจ้งขอแก้ไขหรือลบข้อมูลออกจากระบบได้ตลอดเวลา</p>
+      </div>
+      <button type="button" onclick="closePdpaModal()" class="w-full bg-slate-800 text-white font-semibold py-3 rounded-xl mt-4">รับทราบและเข้าใจนโยบาย</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('invalid', (function () {
+      return function (e) {
+        e.preventDefault();
+        showAlert('⚠️ กรุณากรอกข้อมูลในช่องที่มีเครื่องหมาย * และกดยอมรับ PDPA ให้ครบถ้วนครับ', false);
+        e.target.focus();
+      };
+    })(), true);
+
+    function setFontSize(size) { document.documentElement.style.fontSize = size + 'px'; }
+    function openPdpaModal(e) { if(e) { e.preventDefault(); e.stopPropagation(); } document.getElementById('pdpaModal').classList.remove('hidden'); }
+    function closePdpaModal() { document.getElementById('pdpaModal').classList.add('hidden'); }
+    function setZoneText(text, type) { const el = document.getElementById(type === 'Owner' ? 'zoneInputOwner' : 'zoneInputBuyer'); if(el) { el.value = text; el.focus(); } }
+    function goToAdmin() { window.location.href = '/admin.html'; }
+
+    function showAlert(msg, isSuccess = true) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.textContent = msg;
+      alertBox.className = isSuccess 
+        ? "mt-6 p-4 rounded-2xl text-center font-medium bg-emerald-50 text-emerald-800 border border-emerald-200" 
+        : "mt-6 p-4 rounded-2xl text-center font-medium bg-rose-50 text-rose-800 border border-rose-200";
+      alertBox.classList.remove('hidden');
+      alertBox.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function switchView(view) {
+      ['ownerForm', 'buyerForm', 'agentForm', 'mapSearchTab'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['btnOwner', 'btnBuyer', 'btnAgent', 'btnMap'].forEach(id => document.getElementById(id).className = "flex items-center p-3 rounded-2xl border-2 border-slate-200 bg-white hover:bg-slate-50 transition group shadow-sm");
+      document.getElementById('alertBox').classList.add('hidden');
+
+      const heroBanner = document.getElementById('heroBanner');
+      const bannerTitle = document.getElementById('bannerTitle');
+
+      if(view === 'owner') {
+        document.getElementById('ownerForm').classList.remove('hidden');
+        document.getElementById('btnOwner').className = "flex items-center p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/50 transition group shadow-sm";
+        heroBanner.className = "relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 text-white p-6 sm:p-12 bg-grid-pattern overflow-hidden transition-all duration-300";
+        bannerTitle.textContent = "🏠 ลงประกาศฝากขาย / ปล่อยเช่า";
+      } else if(view === 'buyer') {
+        document.getElementById('buyerForm').classList.remove('hidden');
+        document.getElementById('btnBuyer').className = "flex items-center p-3 rounded-2xl border-2 border-emerald-600 bg-emerald-50/50 transition group shadow-sm";
+        heroBanner.className = "relative bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-950 text-white p-6 sm:p-12 bg-grid-pattern overflow-hidden transition-all duration-300";
+        bannerTitle.textContent = "🔍 ค้นหาห้องพักที่ตรงใจคุณ";
+      } else if(view === 'agent') {
+        document.getElementById('agentForm').classList.remove('hidden');
+        document.getElementById('btnAgent').className = "flex items-center p-3 rounded-2xl border-2 border-purple-600 bg-purple-50/50 transition group shadow-sm";
+        heroBanner.className = "relative bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-950 text-white p-6 sm:p-12 bg-grid-pattern overflow-hidden transition-all duration-300";
+        bannerTitle.textContent = "🤝 ลงทะเบียนทรัพย์ Co-Agent";
+      } else if(view === 'map') {
+        document.getElementById('mapSearchTab').classList.remove('hidden');
+        document.getElementById('btnMap').className = "flex items-center p-3 rounded-2xl border-2 border-rose-600 bg-rose-50/50 transition group shadow-sm";
+        heroBanner.className = "relative bg-gradient-to-br from-slate-900 via-rose-900 to-red-950 text-white p-6 sm:p-12 bg-grid-pattern overflow-hidden transition-all duration-300";
+        bannerTitle.textContent = "🗺️ ค้นหาทรัพย์บนแผนที่จริง";
+        if(mainMapInstance) { setTimeout(() => { mainMapInstance.invalidateSize(); }, 200); } else { initMainMap(); }
+      }
+    }
+
+    let mainMapInstance, pickerMapInstance;
+    let allProperties = [], markersLayer = [];
+    let userMarker, searchCircle;
+    let currentTargetForm = 'owner'; 
+    let tempPinMarker = null;
+
+    function escapeHTML(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function initMainMap() {
+      mainMapInstance = L.map('mainMap').setView([13.7563, 100.5018], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMapInstance);
+      loadMapPins();
+    }
+
+    function loadMapPins() {
+      fetch('/api/gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getMapData' })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          allProperties = res.data || [];
+          document.getElementById('mapStatusText').textContent = `พบข้อมูลทรัพย์ที่ปักหมุดทั้งหมด ${allProperties.length} รายการ`;
+          renderMainMapMarkers(allProperties);
+        }
+      })
+      .catch(() => {
+        document.getElementById('mapStatusText').textContent = 'กำลังรอการเชื่อมต่อฐานข้อมูล...';
+      });
+    }
+
+    function renderMainMapMarkers(dataList) {
+      markersLayer.forEach(m => mainMapInstance.removeLayer(m));
+      markersLayer = [];
+      dataList.forEach(prop => {
+        let isCondo = String(prop.type).includes('คอนโด') || String(prop.room).includes('Bedroom') || String(prop.room).includes('Studio');
+        let iconHtml = isCondo ? '🏢' : '🏡';
+        let customIcon = L.divIcon({ className: 'bg-transparent', html: `<div style="font-size:26px; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.5));">${iconHtml}</div>`, iconSize: [30,30], iconAnchor: [15,30] });
+        let marker = L.marker([prop.lat, prop.lng], {icon: customIcon}).addTo(mainMapInstance);
+        marker.bindPopup(`<div class="font-sarabun font-bold text-sm min-w-[150px]"><span class="text-blue-700">${escapeHTML(prop.project)}</span><br><span class="text-slate-500 font-normal">${escapeHTML(prop.type)} | ${escapeHTML(prop.room)}</span><br><span class="text-emerald-600 text-lg block mt-1">฿ ${Number(prop.price).toLocaleString()}</span></div>`);
+        markersLayer.push(marker);
+      });
+    }
+
+    async function searchLocationByName() {
+      const query = document.getElementById('mapSearchInput').value;
+      if(!query) return;
+      document.getElementById('mapStatusText').textContent = 'กำลังค้นหาสถานที่...';
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}+thailand`);
+        const data = await res.json();
+        if(data.length > 0) { drawUserCenter(parseFloat(data[0].lat), parseFloat(data[0].lon), `📍 พิกัดค้นหา: ${escapeHTML(query)}`); } 
+        else { alert('ค้นหาสถานที่ไม่พบ กรุณาลองใช้ชื่อจังหวัดหรือย่านหลักครับ'); }
+      } catch(e) { alert('เกิดข้อผิดพลาดในการค้นหาแผนที่'); }
+    }
+
+    function findNearMe() {
+      document.getElementById('mapStatusText').textContent = 'กำลังขอสิทธิ์ GPS...';
+      if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => { drawUserCenter(pos.coords.latitude, pos.coords.longitude, '📍 คุณอยู่ที่นี่'); },
+          () => { alert('ไม่สามารถดึงตำแหน่ง GPS ได้ กรุณาเปิดสิทธิ์ Location บนมือถือครับ'); }
+        );
+      }
+    }
+
+    function drawUserCenter(lat, lng, popupText) {
+      if(userMarker) mainMapInstance.removeLayer(userMarker);
+      userMarker = L.marker([lat, lng]).addTo(mainMapInstance).bindPopup(popupText).openPopup();
+      mainMapInstance.setView([lat, lng], 12);
+      filterMap();
+    }
+
+    function filterMap() {
+      const typeFilter = document.getElementById('mapFilterType').value;
+      let filtered = allProperties;
+      if(typeFilter !== 'all') {
+        if (typeFilter === 'คอนโด') {
+          filtered = filtered.filter(p => String(p.type).includes('คอนโด') || String(p.room).includes('Bedroom') || String(p.room).includes('Studio'));
+        } else {
+          filtered = filtered.filter(p => String(p.type).includes(typeFilter) || String(p.room).includes(typeFilter));
+        }
+      }
+
+      if(userMarker) {
+        const radiusVal = Number(document.getElementById('mapFilterRadius').value);
+        if (radiusVal < 9000) {
+          const radius = radiusVal * 1000;
+          const centerLatLng = userMarker.getLatLng();
+          filtered = filtered.filter(p => centerLatLng.distanceTo(L.latLng(p.lat, p.lng)) <= radius);
+          if(searchCircle) mainMapInstance.removeLayer(searchCircle);
+          searchCircle = L.circle(centerLatLng, { color: '#e11d48', fillColor: '#f43f5e', fillOpacity: 0.1, radius: radius }).addTo(mainMapInstance);
+          document.getElementById('mapStatusText').textContent = `พบทรัพย์ในรัศมี ${radiusVal} กม. จำนวน ${filtered.length} รายการ`;
+        } else {
+          if(searchCircle) mainMapInstance.removeLayer(searchCircle);
+          document.getElementById('mapStatusText').textContent = `แสดงทรัพย์ทั้งหมด ${filtered.length} รายการ`;
+        }
+      }
+      renderMainMapMarkers(filtered);
+    }
+
+    function openMapPicker(target) {
+      currentTargetForm = target;
+      document.getElementById('mapPickerModal').classList.remove('hidden');
+      if(!pickerMapInstance) {
+        pickerMapInstance = L.map('pickerMap').setView([13.7563, 100.5018], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(pickerMapInstance);
+        if(navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(pos => pickerMapInstance.setView([pos.coords.latitude, pos.coords.longitude], 14));
+        }
+        pickerMapInstance.on('click', function(e) {
+          if(tempPinMarker) pickerMapInstance.removeLayer(tempPinMarker);
+          tempPinMarker = L.marker(e.latlng, { draggable: true }).addTo(pickerMapInstance);
+          tempPinMarker.bindPopup('<b class="text-blue-600">📍 แตะค้างแล้วลากเพื่อปรับตำแหน่งได้ครับ</b>').openPopup();
+        });
+      }
+      setTimeout(() => { pickerMapInstance.invalidateSize(); }, 200);
+    }
+
+    function closeMapPicker() { document.getElementById('mapPickerModal').classList.add('hidden'); }
+
+    function confirmMapPin() {
+      if(!tempPinMarker) { alert('กรุณาแตะบนแผนที่เพื่อวางหมุดก่อนครับ'); return; }
+      const pos = tempPinMarker.getLatLng();
+      const prefix = currentTargetForm === 'owner' ? 'owner' : 'agent';
+      document.getElementById(prefix + 'Lat').value = pos.lat;
+      document.getElementById(prefix + 'Lng').value = pos.lng;
+      document.getElementById(prefix + 'LatLngDisplay').textContent = `✅ ปักหมุดสำเร็จ (${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)})`;
+      document.getElementById(prefix + 'LatLngDisplay').className = 'text-sm text-emerald-600 font-bold mt-1';
+      closeMapPicker();
+    }
+
+    function submitForm(e, actionName) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.disabled = true; btn.innerHTML = '⏳ กำลังบันทึกข้อมูล...';
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      fetch('/api/gateway', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: actionName, data: data })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          showAlert('✅ บันทึกข้อมูลสำเร็จเรียบร้อย! รหัสอ้างอิงของคุณคือ: ' + res.id, true);
+          form.reset();
+          if(actionName !== 'saveBuyer') {
+            const prefix = actionName === 'saveOwner' ? 'owner' : 'agent';
+            document.getElementById(prefix + 'LatLngDisplay').textContent = 'ยังไม่ได้ระบุตำแหน่งบนแผนที่';
+            document.getElementById(prefix + 'LatLngDisplay').className = 'text-sm text-rose-500 mt-1';
+          }
+          if(mainMapInstance) loadMapPins();
+        } else {
+          showAlert('❌ เกิดข้อผิดพลาด: ' + res.message, false);
+        }
+        btn.disabled = false; btn.innerHTML = originalText;
+      })
+      .catch(() => {
+        showAlert('❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', false);
+        btn.disabled = false; btn.innerHTML = originalText;
+      });
+    }
+  </script>
+</body>
+</html>
