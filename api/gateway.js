@@ -41,7 +41,6 @@ export default async function handler(req, res) {
     return response.json();
   }
 
-  // ฟังก์ชันอัปโหลดรูปภาพ Base64 ขึ้น Supabase Storage
   async function uploadImagesToSupabase(base64Array, prefix) {
     if (!Array.isArray(base64Array) || base64Array.length === 0) return [];
     const uploadedUrls = [];
@@ -86,22 +85,57 @@ export default async function handler(req, res) {
   const genId = (prefix) => `${prefix}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
   try {
-    if (action === 'getMapData') {
-      const inv = await supabaseFetch(`inventory?status=eq.${encodeURIComponent('ว่าง (Available)')}&select=*`);
-      const agents = await supabaseFetch(`co_agents?select=*`);
-      const mapData = [];
+    // ดึงข้อมูลแสดงหน้าเว็บสาธารณะ + แผนที่ (ตัดชื่อ เบอร์โทร และ LINE ออก 100%)
+    if (action === 'getMapData' || action === 'getPublicListings') {
+      const inv = await supabaseFetch(`inventory?status=eq.${encodeURIComponent('ว่าง (Available)')}&order=created_at.desc`);
+      const agents = await supabaseFetch(`co_agents?order=created_at.desc`);
+      const publicData = [];
 
       if (Array.isArray(inv)) {
         inv.forEach(i => {
-          if (i.lat && i.lng) mapData.push({ id: i.prop_id, type: i.listing_type, project: i.project_name, room: i.room_type, price: Number(i.price), lat: Number(i.lat), lng: Number(i.lng) });
+          const imgs = (i.images_link && i.images_link !== '-') 
+            ? i.images_link.split(' , ').map(s => s.trim()).filter(s => s.startsWith('http')) 
+            : [];
+          publicData.push({
+            id: i.prop_id,
+            source: 'Owner',
+            type: i.listing_type,
+            zone: i.zone,
+            project: i.project_name,
+            room: i.room_type,
+            size: i.size_sqm,
+            floor: i.floor,
+            price: Number(i.price),
+            images: imgs,
+            lat: i.lat ? Number(i.lat) : null,
+            lng: i.lng ? Number(i.lng) : null
+          });
         });
       }
+
       if (Array.isArray(agents)) {
         agents.forEach(a => {
-          if (a.lat && a.lng) mapData.push({ id: a.id, type: a.prop_type, project: a.project_zone, room: a.details, price: Number(a.price), lat: Number(a.lat), lng: Number(a.lng) });
+          const imgs = (a.images_link && a.images_link !== '-') 
+            ? a.images_link.split(' , ').map(s => s.trim()).filter(s => s.startsWith('http')) 
+            : [];
+          publicData.push({
+            id: a.id,
+            source: 'Co-Agent',
+            type: a.prop_type,
+            zone: a.project_zone,
+            project: a.project_zone,
+            room: a.details,
+            size: '-',
+            floor: '-',
+            price: Number(a.price),
+            images: imgs,
+            lat: a.lat ? Number(a.lat) : null,
+            lng: a.lng ? Number(a.lng) : null
+          });
         });
       }
-      return res.status(200).json({ success: true, data: mapData });
+
+      return res.status(200).json({ success: true, data: publicData });
     }
 
     if (action === 'saveOwner') {
@@ -149,7 +183,7 @@ export default async function handler(req, res) {
         move_in_date: data.moveInDate || '-'
       });
 
-      await sendLine(`🔍 [มีลูกค้าหาห้องใหม่!]\nรหัส: ${leadId}\nลูกค้า: ${data.buyerName} (${data.buyerContact})\nโซน: ${data.reqZone} (${data.reqRoomType})\nงบ: ${Number(data.minBudget).toLocaleString()} - ${Number(data.maxBudget).toLocaleString()} บ.`);
+      await sendLine(`🔍 [มีลูกค้าหาห้องใหม่!]\nรหัส: ${leadId}\nลูกค้า: ${data.buyerName} (${data.buyerContact})\nสนใจโครงการ/รหัส: ${data.reqProject || '-'}\nโซน: ${data.reqZone} (${data.reqRoomType})\nงบ: ${Number(data.minBudget).toLocaleString()} - ${Number(data.maxBudget).toLocaleString()} บ.`);
       await checkMatching();
       return res.status(200).json({ success: true, id: leadId });
     }
