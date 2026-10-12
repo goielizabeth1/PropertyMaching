@@ -18,7 +18,6 @@
         radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
     }
     .full-map-height { height: calc(100vh - 76px); width: 100%; z-index: 10; }
-    /* ปรับแต่ง Scrollbar ให้เรียบหรู */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
@@ -27,11 +26,8 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
 
-  <!-- ========================================== -->
-  <!-- TOP GLASSMORPHISM NAVBAR (เต็มจอ) -->
-  <!-- ========================================== -->
+  <!-- TOP GLASSMORPHISM NAVBAR -->
   <header class="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 px-4 lg:px-10 h-[76px] flex items-center justify-between shadow-sm">
-    <!-- โลโก้แบรนด์ -->
     <div class="flex items-center gap-3">
       <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-blue-500/25">
         ✨
@@ -42,7 +38,6 @@
       </div>
     </div>
 
-    <!-- เมนูสลับหน้า (Desktop Center Pills) -->
     <nav class="hidden md:flex items-center bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/70 gap-1">
       <button type="button" onclick="switchView('owner')" id="btnOwner" class="px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 bg-white text-blue-600 shadow-sm">
         <span>🏠</span> ฝากขาย / เช่า
@@ -58,7 +53,6 @@
       </button>
     </nav>
 
-    <!-- เครื่องมือด้านขวา (ปรับขนาดอักษร + ปุ่ม Admin) -->
     <div class="flex items-center gap-3">
       <div class="hidden sm:flex items-center bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs">
         <button type="button" onclick="setFontSize(14)" class="px-2 py-0.5 hover:bg-white rounded-lg font-medium text-slate-600 transition">A-</button>
@@ -71,7 +65,7 @@
     </div>
   </header>
 
-  <!-- เมนูสลับหน้าสำหรับมือถือ (แสดงเฉพาะจอเล็ก) -->
+  <!-- Mobile Navigation -->
   <div class="md:hidden bg-white border-b border-slate-200 px-3 py-2.5 grid grid-cols-4 gap-1.5 sticky top-[76px] z-30 shadow-sm">
     <button type="button" onclick="switchView('owner')" id="btnOwnerMob" class="py-2 rounded-xl font-bold text-xs flex flex-col items-center gap-1 bg-blue-50 text-blue-600 border border-blue-200">
       <span class="text-base">🏠</span> ฝากห้อง
@@ -87,9 +81,7 @@
     </button>
   </div>
 
-  <!-- ========================================== -->
-  <!-- HERO HEADER (ซ่อนอัตโนมัติเมื่อเปิดแผนที่เต็มจอ) -->
-  <!-- ========================================== -->
+  <!-- HERO HEADER -->
   <section id="heroBanner" class="bg-mesh text-white py-10 lg:py-14 px-6 lg:px-12 relative overflow-hidden transition-all duration-300 border-b border-slate-800">
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
       <div class="max-w-2xl">
@@ -104,7 +96,6 @@
         </p>
       </div>
 
-      <!-- การ์ดสถิติความน่าเชื่อถือด้านขวา -->
       <div class="grid grid-cols-3 gap-3 sm:gap-4 w-full lg:w-auto shrink-0">
         <div class="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl text-center">
           <div class="text-2xl sm:text-3xl font-extrabold text-blue-400">100%</div>
@@ -122,26 +113,21 @@
     </div>
   </section>
 
-  <!-- ========================================== -->
-  <!-- MAIN WORKSPACE (แสดงผลกว้างเต็มจอ) -->
-  <!-- ========================================== -->
+  <!-- MAIN WORKSPACE -->
   <main class="flex-1 w-full">
 
-    <!-- กล่องแจ้งเตือนสถานะการบันทึก -->
     <div id="alertContainer" class="max-w-7xl mx-auto px-6 lg:px-12 pt-6 hidden">
       <div id="alertBox" class="p-5 rounded-2xl text-center font-bold text-base shadow-lg border"></div>
     </div>
 
-    <!-- คอนเทนเนอร์สำหรับฟอร์มทั้ง 3 (Split-Screen Layout) -->
     <div id="formsContainer" class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-8 lg:py-12">
 
       <!-- ========================================== -->
-      <!-- 1. OWNER FORM (เจ้าของฝากทรัพย์) -->
+      <!-- 1. OWNER FORM -->
       <!-- ========================================== -->
       <form id="ownerForm" onsubmit="submitForm(event, 'saveOwner')" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
         
-        <!-- คอลัมน์ซ้าย: คำแนะนำและจุดเด่น -->
         <div class="lg:col-span-4 lg:sticky lg:top-28 space-y-6">
           <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-7 text-white shadow-xl shadow-blue-600/15">
             <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl mb-4">🏠</div>
@@ -150,16 +136,14 @@
               ระบบจะนำข้อมูลห้องของคุณไปเปรียบเทียบกับฐานข้อมูลลูกค้าที่กำลังหาห้องพักโดยอัตโนมัติ และแจ้งเตือนทีมงานทันทีที่พบคู่แมตช์
             </p>
             <div class="mt-6 pt-6 border-t border-white/15 space-y-3 text-xs sm:text-sm text-blue-50">
-              <div class="flex items-center gap-2.5"><span>✅</span> <span>ไม่เปิดเผยเบอร์โทรของคุณบนหน้าเว็บ</span></div>
+              <div class="flex items-center gap-2.5"><span>✅</span> <span>แนบรูปจากมือถือได้ทันที (ย่อขนาดอัตโนมัติ)</span></div>
+              <div class="flex items-center gap-2.5"><span>✅</span> <span>ไม่เปิดเผยเบอร์โทรและรูปห้องของคุณต่อสาธารณะ</span></div>
               <div class="flex items-center gap-2.5"><span>✅</span> <span>คัดกรองเฉพาะลูกค้าที่มีงบประมาณตรง</span></div>
-              <div class="flex items-center gap-2.5"><span>✅</span> <span>แสดงหมุดทำเลบนแผนที่ช่วยดึงดูดผู้ซื้อ</span></div>
             </div>
           </div>
         </div>
 
-        <!-- คอลัมน์ขวา: ฟอร์มกรอกข้อมูลขนาดใหญ่ -->
         <div class="lg:col-span-8 space-y-6">
-          <!-- การ์ด 1: ข้อมูลติดต่อ -->
           <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 space-y-5">
             <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
               <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">1</span>
@@ -180,7 +164,6 @@
             </div>
           </div>
 
-          <!-- การ์ด 2: รายละเอียดทรัพย์และทำเล -->
           <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 space-y-5">
             <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
               <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">2</span>
@@ -247,7 +230,6 @@
               </div>
             </div>
 
-            <!-- ปักหมุดแผนที่ -->
             <div class="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
               <div>
                 <h4 class="font-bold text-base flex items-center gap-2">📍 ปักหมุดตำแหน่งที่ตั้งบนแผนที่</h4>
@@ -261,25 +243,37 @@
             </div>
           </div>
 
-          <!-- การ์ด 3: ราคาและยืนยัน -->
-          <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 space-y-5">
+          <!-- การ์ด 3: ราคาและอัปโหลดรูปภาพ -->
+          <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 space-y-6">
             <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
               <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">3</span>
               <div>
-                <h3 class="font-bold text-lg text-slate-900">ราคาและลิงก์รูปภาพ</h3>
-                <p class="text-xs text-slate-400">รูปภาพจะถูกเก็บไว้ให้แอดมินส่งให้ลูกค้าดูส่วนตัว ไม่แสดงบนหน้าเว็บ</p>
+                <h3 class="font-bold text-lg text-slate-900">ราคาและแนบรูปภาพทรัพย์</h3>
+                <p class="text-xs text-slate-400">สามารถเลือกอัปโหลดรูปจากมือถือได้เลย (สูงสุด 5 รูป) หรือวางลิงก์อัลบั้มเพิ่มเติม</p>
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">ราคาขาย หรือ ค่าเช่า/เดือน (บาท) *</label>
-                <input type="number" name="price" required placeholder="ใส่เฉพาะตัวเลข เช่น 15000" class="w-full p-3.5 bg-slate-50/70 border border-slate-300 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-600 text-lg">
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">ลิงก์รูปภาพ (Google Drive / Dropbox)</label>
-                <input type="url" name="imagesLink" placeholder="https://..." class="w-full p-3.5 bg-slate-50/70 border border-slate-300 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-              </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">ราคาขาย หรือ ค่าเช่า/เดือน (บาท) * <span class="text-xs text-rose-500">(ใส่เฉพาะตัวเลข)</span></label>
+              <input type="number" name="price" required placeholder="เช่น 15000 หรือ 3500000" class="w-full p-4 bg-slate-50/70 border border-slate-300 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-extrabold text-blue-600 text-xl">
+            </div>
+
+            <!-- กล่องอัปโหลดรูปภาพจากเครื่อง (Supabase Storage) -->
+            <div class="space-y-3">
+              <label class="block text-sm font-bold text-slate-700">📷 อัปโหลดรูปภาพห้องจากเครื่อง (สูงสุด 5 รูป)</label>
+              <label for="ownerFileInput" class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-blue-300 rounded-2xl cursor-pointer bg-blue-50/40 hover:bg-blue-50 transition p-4 text-center">
+                <span class="text-3xl mb-1">📤</span>
+                <span class="text-sm font-bold text-blue-700">แตะที่นี่เพื่อเลือกรูปภาพจากมือถือ หรือคอมพิวเตอร์</span>
+                <span class="text-xs text-slate-500 mt-1">รองรับไฟล์ภาพ JPG, PNG (ระบบจะย่อขนาดภาพให้อัตโนมัติเพื่อความรวดเร็ว)</span>
+                <input id="ownerFileInput" type="file" accept="image/*" multiple onchange="handleImageSelect(event, 'owner')" class="hidden" />
+              </label>
+              <!-- พื้นที่แสดงตัวอย่างรูปที่เลือก -->
+              <div id="ownerPreviewGrid" class="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2 empty:hidden"></div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1.5">🔗 หรือวางลิงก์รูปภาพเพิ่มเติม (Google Drive / Dropbox - ถ้ามี)</label>
+              <input type="url" name="imagesLink" placeholder="https://drive.google.com/..." class="w-full p-3 bg-slate-50/70 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
 
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
@@ -299,7 +293,7 @@
       </form>
 
       <!-- ========================================== -->
-      <!-- 2. BUYER FORM (ลูกค้าหาห้อง) -->
+      <!-- 2. BUYER FORM -->
       <!-- ========================================== -->
       <form id="buyerForm" onsubmit="submitForm(event, 'saveBuyer')" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start hidden">
         <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
@@ -370,7 +364,7 @@
       </form>
 
       <!-- ========================================== -->
-      <!-- 3. CO-AGENT FORM (เครือข่ายนายหน้า) -->
+      <!-- 3. CO-AGENT FORM -->
       <!-- ========================================== -->
       <form id="agentForm" onsubmit="submitForm(event, 'saveAgent')" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start hidden">
         <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
@@ -403,9 +397,27 @@
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">ชื่อโครงการ / ทำเล *</label><input type="text" name="projectZone" required class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl"></div>
             </div>
             <div><label class="block text-sm font-semibold text-slate-700 mb-2">รายละเอียดห้อง (ขนาด, ชั้น, จุดเด่น) *</label><textarea name="details" rows="3" required class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl"></textarea></div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div><label class="block text-sm font-semibold text-slate-700 mb-2">ราคาขาย / เช่า (บาท) *</label><input type="number" name="price" required class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl font-bold text-purple-700"></div>
-              <div><label class="block text-sm font-semibold text-slate-700 mb-2">ลิงก์รูปภาพทรัพย์ (Google Drive) *</label><input type="url" name="imagesLink" required class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl"></div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">ราคาขาย / เช่า (บาท) *</label>
+              <input type="number" name="price" required placeholder="ใส่เฉพาะตัวเลข" class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl font-extrabold text-purple-700 text-lg">
+            </div>
+
+            <!-- อัปโหลดรูปภาพสำหรับ Co-Agent -->
+            <div class="space-y-3">
+              <label class="block text-sm font-bold text-slate-700">📷 อัปโหลดรูปภาพทรัพย์ (สูงสุด 5 รูป)</label>
+              <label for="agentFileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-purple-300 rounded-2xl cursor-pointer bg-purple-50/40 hover:bg-purple-50 transition p-4 text-center">
+                <span class="text-2xl mb-1">📤</span>
+                <span class="text-sm font-bold text-purple-700">แตะเพื่อเลือกรูปภาพจากเครื่อง</span>
+                <span class="text-xs text-slate-500">เลือกได้สูงสุด 5 รูป หรือวางลิงก์ Google Drive ด้านล่าง</span>
+                <input id="agentFileInput" type="file" accept="image/*" multiple onchange="handleImageSelect(event, 'agent')" class="hidden" />
+              </label>
+              <div id="agentPreviewGrid" class="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2 empty:hidden"></div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1.5">🔗 หรือวางลิงก์อัลบั้มรูป (Google Drive / Dropbox)</label>
+              <input type="url" name="imagesLink" placeholder="https://drive.google.com/..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
             </div>
 
             <div class="p-5 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -444,11 +456,8 @@
 
     </div>
 
-    <!-- ========================================== -->
-    <!-- 4. FULL-SCREEN MAP VIEW (แผนที่กางเต็มจอ 100%) -->
-    <!-- ========================================== -->
+    <!-- 4. FULL-SCREEN MAP VIEW -->
     <div id="mapSearchTab" class="hidden relative w-full full-map-height overflow-hidden">
-      <!-- แผงควบคุมลอยตัว (Floating Control Panel) -->
       <div class="absolute top-4 left-4 right-4 sm:right-auto sm:w-[400px] z-20 bg-white/95 backdrop-blur-xl p-5 rounded-3xl shadow-2xl border border-slate-200/80 space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="font-extrabold text-slate-900 text-base flex items-center gap-2">🗺️ ค้นหาทำเลบนแผนที่จริง</h3>
@@ -481,7 +490,6 @@
         </button>
       </div>
 
-      <!-- ตัวแผนที่เต็มจอ -->
       <div id="mainMap" class="w-full h-full"></div>
     </div>
 
@@ -534,6 +542,71 @@
   </div>
 
   <script>
+    // ระบบจัดเก็บและย่อขนาดรูปภาพอัตโนมัติ (ปลอดภัย + ประหยัดพื้นที่)
+    let selectedImages = { owner: [], agent: [] };
+
+    async function handleImageSelect(event, formType) {
+      const files = Array.from(event.target.files);
+      if (!files.length) return;
+
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+        if (selectedImages[formType].length >= 5) {
+          alert('สามารถแนบรูปภาพได้สูงสุด 5 รูปต่อรายการครับ');
+          break;
+        }
+        const compressedBase64 = await compressImage(file, 1280, 0.75);
+        selectedImages[formType].push(compressedBase64);
+      }
+      event.target.value = '';
+      renderImagePreviews(formType);
+    }
+
+    function compressImage(file, maxWidth, quality) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderImagePreviews(formType) {
+      const grid = document.getElementById(formType + 'PreviewGrid');
+      grid.innerHTML = '';
+      selectedImages[formType].forEach((src, idx) => {
+        grid.innerHTML += `
+          <div class="relative group aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
+            <img src="${src}" class="w-full h-full object-cover" />
+            <button type="button" onclick="removeSelectedImage('${formType}', ${idx})" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center shadow-md hover:bg-rose-700">
+              &times;
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function removeSelectedImage(formType, index) {
+      selectedImages[formType].splice(index, 1);
+      renderImagePreviews(formType);
+    }
+
     document.addEventListener('invalid', (function () {
       return function (e) {
         e.preventDefault();
@@ -564,7 +637,6 @@
       ['ownerForm', 'buyerForm', 'agentForm'].forEach(id => document.getElementById(id).classList.add('hidden'));
       document.getElementById('mapSearchTab').classList.add('hidden');
 
-      // รีเซ็ตสไตล์ปุ่มบน Desktop และ Mobile
       ['btnOwner', 'btnBuyer', 'btnAgent', 'btnMap'].forEach(id => {
         document.getElementById(id).className = "px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900";
       });
@@ -578,7 +650,6 @@
       const bannerTitle = document.getElementById('bannerTitle');
 
       if (view === 'map') {
-        // โหมดแผนที่เต็มจอ: ซ่อนแบนเนอร์และขอบเพื่อให้แผนที่กางเต็ม 100%
         hero.classList.add('hidden');
         formsContainer.classList.add('hidden');
         footer.classList.add('hidden');
@@ -752,9 +823,11 @@
       const form = e.target;
       const btn = form.querySelector('button[type="submit"]');
       const originalText = btn.innerHTML;
-      btn.disabled = true; btn.innerHTML = '⏳ กำลังบันทึกข้อมูลเข้าสู่ระบบ...';
+      btn.disabled = true; btn.innerHTML = '⏳ กำลังอัปโหลดรูปภาพและบันทึกข้อมูล...';
 
       const data = Object.fromEntries(new FormData(form).entries());
+      if (actionName === 'saveOwner') data.uploadedFiles = selectedImages.owner;
+      if (actionName === 'saveAgent') data.uploadedFiles = selectedImages.agent;
 
       fetch('/api/gateway', {
         method: 'POST',
@@ -764,10 +837,12 @@
       .then(res => res.json())
       .then(res => {
         if (res.success) {
-          showAlert('🎉 บันทึกข้อมูลสำเร็จเรียบร้อย! รหัสอ้างอิงของคุณคือ: ' + res.id, true);
+          showAlert('🎉 บันทึกข้อมูลและอัปโหลดรูปภาพสำเร็จ! รหัสอ้างอิงของคุณคือ: ' + res.id, true);
           form.reset();
           if(actionName !== 'saveBuyer') {
             const prefix = actionName === 'saveOwner' ? 'owner' : 'agent';
+            selectedImages[prefix] = [];
+            renderImagePreviews(prefix);
             document.getElementById(prefix + 'LatLngDisplay').textContent = 'ยังไม่ได้ระบุพิกัดบนแผนที่';
             document.getElementById(prefix + 'LatLngDisplay').className = 'text-xs text-amber-300 mt-1';
           }
