@@ -68,7 +68,7 @@
     </div>
   </header>
 
-  <!-- Mobile Navigation (5 ปุ่ม) -->
+  <!-- Mobile Navigation -->
   <div class="md:hidden bg-white border-b border-slate-200 px-2 py-2 grid grid-cols-5 gap-1 sticky top-[76px] z-30 shadow-sm">
     <button type="button" onclick="switchView('catalog')" id="btnCatalogMob" class="py-2 rounded-xl font-bold text-[11px] flex flex-col items-center gap-0.5 bg-indigo-50 text-indigo-600 border border-indigo-200">
       <span class="text-base">🏢</span> ทรัพย์ว่าง
@@ -122,11 +122,8 @@
 
     <div id="formsContainer" class="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-8 lg:py-10">
 
-      <!-- ========================================== -->
-      <!-- 0. CATALOG SECTION (โชว์ทรัพย์ที่ลูกค้าอัปเข้ามา แต่ปิดเบอร์/LINE) -->
-      <!-- ========================================== -->
+      <!-- 0. CATALOG SECTION -->
       <div id="catalogSection" class="space-y-6">
-        <!-- แถบค้นหาและตัวกรองแคตตาล็อก -->
         <div class="bg-white p-4 sm:p-5 rounded-3xl shadow-sm border border-slate-200/80 flex flex-col md:flex-row gap-3 items-center justify-between">
           <div class="relative w-full md:flex-1">
             <input type="text" id="catalogSearch" oninput="filterCatalog()" placeholder="ค้นหาชื่อโครงการ, โซน, จังหวัด หรือรหัสทรัพย์..." class="w-full p-3.5 pl-11 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500">
@@ -144,13 +141,10 @@
           </div>
         </div>
 
-        <!-- ตารางการ์ดแสดงรายการทรัพย์ (3 คอลัมน์เต็มจอ) -->
         <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
       </div>
 
-      <!-- ========================================== -->
       <!-- 1. OWNER FORM -->
-      <!-- ========================================== -->
       <form id="ownerForm" onsubmit="submitForm(event, 'saveOwner')" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start hidden">
         <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
         
@@ -268,7 +262,7 @@
               <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">3</span>
               <div>
                 <h3 class="font-bold text-lg text-slate-900">ราคาและแนบรูปภาพทรัพย์</h3>
-                <p class="text-xs text-slate-400">รูปภาพจะใช้แสดงประกอบในการ์ดประกาศบนหน้าเว็บ (สูงสุด 5 รูป)</p>
+                <p class="text-xs text-slate-400">สามารถอัปโหลดรูปจากมือถือ หรือวางลิงก์เพื่อให้ระบบดึงรูปปกให้อัตโนมัติ</p>
               </div>
             </div>
 
@@ -289,8 +283,8 @@
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1.5">🔗 หรือวางลิงก์รูปภาพเพิ่มเติม (Google Drive / Dropbox - ถ้ามี)</label>
-              <input type="url" name="imagesLink" placeholder="https://drive.google.com/..." class="w-full p-3 bg-slate-50/70 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+              <label class="block text-xs font-semibold text-slate-500 mb-1.5">🔗 หรือวางลิงก์โพสต์ / ลิงก์รูปภาพ (ระบบจะดึงรูปปกมาแสดงให้อัตโนมัติ)</label>
+              <input type="url" name="imagesLink" placeholder="https://..." class="w-full p-3 bg-slate-50/70 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
 
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
@@ -309,9 +303,7 @@
         </div>
       </form>
 
-      <!-- ========================================== -->
       <!-- 2. BUYER FORM -->
-      <!-- ========================================== -->
       <form id="buyerForm" onsubmit="submitForm(event, 'saveBuyer')" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start hidden">
         <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
         
@@ -380,9 +372,7 @@
         </div>
       </form>
 
-      <!-- ========================================== -->
       <!-- 3. CO-AGENT FORM -->
-      <!-- ========================================== -->
       <form id="agentForm" onsubmit="submitForm(event, 'saveAgent')" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start hidden">
         <input type="text" name="bot_trap" style="display:none !important" tabindex="-1" autocomplete="off">
         
@@ -425,15 +415,15 @@
               <label for="agentFileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-purple-300 rounded-2xl cursor-pointer bg-purple-50/40 hover:bg-purple-50 transition p-4 text-center">
                 <span class="text-2xl mb-1">📤</span>
                 <span class="text-sm font-bold text-purple-700">แตะเพื่อเลือกรูปภาพจากเครื่อง</span>
-                <span class="text-xs text-slate-500">เลือกได้สูงสุด 5 รูป หรือวางลิงก์ Google Drive ด้านล่าง</span>
+                <span class="text-xs text-slate-500">เลือกได้สูงสุด 5 รูป หรือวางลิงก์ด้านล่าง</span>
                 <input id="agentFileInput" type="file" accept="image/*" multiple onchange="handleImageSelect(event, 'agent')" class="hidden" />
               </label>
               <div id="agentPreviewGrid" class="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2 empty:hidden"></div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1.5">🔗 หรือวางลิงก์อัลบั้มรูป (Google Drive / Dropbox)</label>
-              <input type="url" name="imagesLink" placeholder="https://drive.google.com/..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+              <label class="block text-xs font-semibold text-slate-500 mb-1.5">🔗 หรือวางลิงก์โพสต์ / ลิงก์รูปภาพเพิ่มเติม</label>
+              <input type="url" name="imagesLink" placeholder="https://..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
             </div>
 
             <div class="p-5 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -561,11 +551,58 @@
     let selectedImages = { owner: [], agent: [] };
     let allProperties = [];
 
+    // คลังภาพถ่ายสถาปัตยกรรมและห้องตัวอย่างระดับพรีเมียม แยกตามประเภททรัพย์ (Smart Cover Selector)
+    const SMART_COVERS = {
+      condo1: [
+        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=80'
+      ],
+      condoLarge: [
+        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=900&q=80'
+      ],
+      house: [
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=900&q=80'
+      ],
+      land: [
+        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80',
+        'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=900&q=80'
+      ]
+    };
+
+    // เลือกรูปที่ตรงกับสเปกห้องและรหัสทรัพย์โดยอัตโนมัติ
+    function getSmartCoverImage(item) {
+      if (item.images && item.images.length > 0) {
+        return { url: item.images[0], isReal: true, count: item.images.length };
+      }
+      const roomText = `${item.room || ''} ${item.type || ''} ${item.project || ''}`;
+      let pool = SMART_COVERS.condo1;
+      if (roomText.includes('บ้าน') || roomText.includes('ทาวน์โฮม') || roomText.includes('CENTRO') || roomText.includes('ธาดา')) {
+        pool = SMART_COVERS.house;
+      } else if (roomText.includes('ที่ดิน')) {
+        pool = SMART_COVERS.land;
+      } else if (roomText.includes('2 Bedroom') || roomText.includes('3+ Bedroom')) {
+        pool = SMART_COVERS.condoLarge;
+      }
+      const idStr = String(item.id || 'PROP');
+      let hash = 0;
+      for (let i = 0; i < idStr.length; i++) hash = idStr.charCodeAt(i) + ((hash << 5) - hash);
+      const selectedUrl = pool[Math.abs(hash) % pool.length];
+      return { url: selectedUrl, isReal: false, count: 1 };
+    }
+
     function escapeHTML(str) {
       return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    // โหลดรายการทรัพย์สาธารณะทันทีที่เปิดเว็บ
     window.addEventListener('DOMContentLoaded', () => {
       loadPublicData();
     });
@@ -610,53 +647,47 @@
       }
 
       grid.innerHTML = list.map(item => {
-        const hasImg = item.images && item.images.length > 0;
-        const coverImg = hasImg ? item.images[0] : '';
+        const cover = getSmartCoverImage(item);
         const typeBadgeColor = String(item.type).includes('เช่า') ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white';
 
         return `
           <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group">
-            <!-- ส่วนรูปภาพปก -->
-            <div class="relative h-52 bg-slate-900 overflow-hidden">
-              ${hasImg 
-                ? `<img src="${escapeHTML(coverImg)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />`
-                : `<div class="w-full h-full bg-gradient-to-br from-slate-800 via-indigo-950 to-slate-900 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-                     <span class="text-4xl mb-1">🏢</span>
-                     <span class="text-xs font-medium text-slate-300">${escapeHTML(item.project)}</span>
-                   </div>`
-              }
+            <div class="relative h-56 bg-slate-900 overflow-hidden">
+              <img src="${escapeHTML(cover.url)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
               <div class="absolute top-3 left-3 flex gap-1.5">
                 <span class="px-3 py-1 rounded-full text-xs font-extrabold shadow ${typeBadgeColor}">${escapeHTML(item.type)}</span>
                 <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-900/80 text-white backdrop-blur-md">${escapeHTML(item.id)}</span>
               </div>
-              ${hasImg && item.images.length > 1 ? `<span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/70 text-white text-[11px] font-bold">📷 ${item.images.length} รูป</span>` : ''}
+              ${cover.isReal && cover.count > 1 
+                ? `<span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/70 text-white text-[11px] font-bold">📷 รูปจริง (${cover.count} รูป)</span>` 
+                : `<span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-md text-white text-[11px] font-semibold">✨ ${escapeHTML(item.room)}</span>`
+              }
             </div>
 
-            <!-- ส่วนรายละเอียด (ไม่มีเบอร์โทร/LINE แสดงผล) -->
             <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
               <div>
                 <div class="text-xs font-bold text-indigo-600 mb-1 flex items-center gap-1">
                   <span>📍</span> ${escapeHTML(item.zone)}
                 </div>
                 <h3 class="font-extrabold text-lg text-slate-900 line-clamp-1">${escapeHTML(item.project)}</h3>
-                <p class="text-xs text-slate-500 mt-1 line-clamp-2">${escapeHTML(item.room)} ${item.size && item.size !== '-' ? `• ขนาด ${escapeHTML(item.size)} ตร.ม.` : ''} ${item.floor && item.floor !== '-' ? `• ${escapeHTML(item.floor)}` : ''}</p>
+                <p class="text-xs text-slate-500 mt-1 line-clamp-2">${escapeHTML(item.room)} ${item.size && item.size !== '-' ? `• ขนาด ${escapeHTML(item.size)} ตร.ม.` : ''} ${item.floor && item.floor !== '-' ? `• ชั้น/ตึก: ${escapeHTML(item.floor)}` : ''}</p>
               </div>
 
               <div class="pt-3 border-t border-slate-100">
                 <div class="flex items-baseline justify-between mb-3">
-                  <span class="text-xs text-slate-400 font-medium">ราคาเสนอ</span>
+                  <span class="text-xs text-slate-400 font-medium">${String(item.type).includes('เช่า') ? 'ค่าเช่า / เดือน' : 'ราคาเสนอขาย'}</span>
                   <span class="text-xl font-extrabold text-emerald-600">฿ ${Number(item.price).toLocaleString()}</span>
                 </div>
 
-                <!-- แถบแจ้งว่าปิดซ่อนข้อมูลติดต่อ + ปุ่มนัดชม -->
                 <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200/70 mb-3 text-[11px] text-slate-500">
                   <span>🔒 เบอร์โทร/LINE เจ้าของถูกซ่อน</span>
-                  <span class="text-emerald-600 font-bold">✓ ตรวจสอบแล้ว</span>
+                  <span class="text-emerald-600 font-bold">✓ ว่างพร้อมนัดชม</span>
                 </div>
 
                 <button type="button" onclick="inquireProperty('${escapeHTML(item.id)}', '${escapeHTML(item.project)}', '${escapeHTML(item.zone)}', ${Number(item.price)})" 
                   class="w-full py-3 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-sm transition shadow-sm flex items-center justify-center gap-1.5">
-                  <span>💬</span> สนใจห้องนี้ / นัดชมห้อง
+                  <span>💬</span> สนใจห้องนี้ / ขอดูรูปจริง
                 </button>
               </div>
             </div>
@@ -676,14 +707,13 @@
       renderCatalogCards(filtered);
     }
 
-    // เมื่อลูกค้ากดปุ่ม "สนใจห้องนี้" จากการ์ดแคตตาล็อก
     function inquireProperty(id, project, zone, price) {
       switchView('buyer');
       document.getElementById('buyerReqProject').value = `[สนใจรหัส ${id}] ${project}`;
       document.getElementById('zoneInputBuyer').value = zone;
       document.getElementById('buyerMinBudget').value = Math.max(0, Math.floor(price * 0.9));
       document.getElementById('buyerMaxBudget').value = price;
-      showAlert(`📌 คุณกำลังสอบถามห้องรหัส ${id} (${project}) กรุณากรอกชื่อและเบอร์โทร/LINE เพื่อให้ทีมงานส่งรายละเอียดให้ทันทีครับ`, true);
+      showAlert(`📌 คุณกำลังสอบถามห้องรหัส ${id} (${project}) กรุณากรอกชื่อและเบอร์โทร/LINE เพื่อให้ทีมงานส่งรูปห้องจริงให้ดูทาง LINE ทันทีครับ`, true);
     }
 
     async function handleImageSelect(event, formType) {
@@ -980,7 +1010,6 @@
             renderImagePreviews(prefix);
             document.getElementById(prefix + 'LatLngDisplay').textContent = 'ยังไม่ได้ระบุพิกัดบนแผนที่';
             document.getElementById(prefix + 'LatLngDisplay').className = 'text-xs text-amber-300 mt-1';
-            // พาไปหน้าแคตตาล็อกทันทีเพื่อให้ลูกค้าเห็นการ์ดทรัพย์ของตัวเองขึ้นโชว์
             switchView('catalog');
             showAlert('🎉 ลงประกาศสำเร็จ! รหัสทรัพย์ของคุณคือ ' + res.id + ' (แสดงบนหน้าเว็บแล้วโดยซ่อนเบอร์โทรของคุณไว้เป็นความลับ)', true);
           } else {
