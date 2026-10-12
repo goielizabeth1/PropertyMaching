@@ -17,6 +17,11 @@
         radial-gradient(at 100% 0%, rgba(79, 70, 229, 0.25) 0px, transparent 50%),
         radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
     }
+    /* กำหนดขนาดหัวข้อหลักทุกหน้าให้เป็น 22pt ตามต้องการ */
+    .heading-22pt {
+      font-size: 22pt !important;
+      line-height: 1.35 !important;
+    }
     .full-map-height { height: calc(100vh - 76px); width: 100%; z-index: 10; }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -87,26 +92,26 @@
     </button>
   </div>
 
-  <!-- HERO HEADER -->
-  <section id="heroBanner" class="bg-mesh text-white py-10 lg:py-12 px-6 lg:px-12 relative overflow-hidden transition-all duration-300 border-b border-slate-800">
+  <!-- HERO HEADER (ปรับขนาดหัวข้อเป็น 22pt และลดความสูงให้กระชับ) -->
+  <section id="heroBanner" class="bg-mesh text-white py-7 lg:py-9 px-6 lg:px-12 relative overflow-hidden transition-all duration-300 border-b border-slate-800">
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
       <div class="max-w-2xl">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold text-blue-200 mb-3">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold text-blue-200 mb-2.5">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> อัปเดตข้อมูลเรียลไทม์ • ปกป้องข้อมูลติดต่อเจ้าของห้อง 100%
         </div>
-        <h1 id="bannerTitle" class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+        <h1 id="bannerTitle" class="heading-22pt font-bold tracking-tight">
           รายการอสังหาริมทรัพย์ว่างพร้อมอยู่
         </h1>
-        <p id="bannerSub" class="text-slate-300 text-base sm:text-lg mt-2.5 leading-relaxed">
+        <p id="bannerSub" class="text-slate-300 text-sm sm:text-base mt-2 leading-relaxed">
           รวมบ้านและคอนโดคัดพิเศษจากเจ้าของโดยตรง ข้อมูลผู้ติดต่อถูกเก็บเป็นความลับเพื่อความปลอดภัย สนใจห้องไหนกดนัดชมผ่านทีมงานได้ทันที
         </p>
       </div>
 
       <div class="flex flex-wrap gap-3 shrink-0">
-        <button type="button" onclick="switchView('owner')" class="px-5 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-500/30 transition flex items-center gap-2">
+        <button type="button" onclick="switchView('owner')" class="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-500/30 transition flex items-center gap-2">
           <span>➕</span> ลงประกาศฝากห้องฟรี
         </button>
-        <button type="button" onclick="switchView('buyer')" class="px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-sm backdrop-blur-md transition flex items-center gap-2">
+        <button type="button" onclick="switchView('buyer')" class="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-sm backdrop-blur-md transition flex items-center gap-2">
           <span>🎯</span> ให้ระบบช่วยหาห้องตามงบ
         </button>
       </div>
@@ -151,7 +156,7 @@
         <div class="lg:col-span-4 lg:sticky lg:top-28 space-y-6">
           <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-7 text-white shadow-xl shadow-blue-600/15">
             <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl mb-4">🏠</div>
-            <h2 class="text-2xl font-bold leading-snug">ฝากทรัพย์ขึ้นแสดงหน้าเว็บทันที (ซ่อนเบอร์โทรปลอดภัย)</h2>
+            <h2 class="text-xl font-bold leading-snug">ฝากทรัพย์ขึ้นแสดงหน้าเว็บทันที (ซ่อนเบอร์โทรปลอดภัย)</h2>
             <p class="text-blue-100 text-sm mt-2 leading-relaxed">
               เมื่อคุณกดบันทึก ข้อมูลห้องและรูปภาพจะถูกนำไปแสดงในหน้าแคตตาล็อกและแผนที่ทันที โดยระบบจะ **ปิดซ่อนชื่อ เบอร์โทร และ LINE ของคุณไว้เป็นความลับ** ให้เฉพาะแอดมินติดต่อเท่านั้น
             </p>
@@ -163,7 +168,7 @@
             <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
               <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">1</span>
               <div>
-                <h3 class="font-bold text-lg text-slate-900">ข้อมูลผู้ติดต่อ (เจ้าของทรัพย์) — <span class="text-emerald-600 text-sm">🔒 ปิดเป็นความลับไม่แสดงหน้าเว็บ</span></h3>
+                <h3 class="font-bold text-base sm:text-lg text-slate-900">ข้อมูลผู้ติดต่อ (เจ้าของทรัพย์) — <span class="text-emerald-600 text-sm">🔒 ปิดเป็นความลับไม่แสดงหน้าเว็บ</span></h3>
                 <p class="text-xs text-slate-400">ข้อมูลส่วนนี้ใช้สำหรับให้ทีมงานแอดมินติดต่อกลับเท่านั้น</p>
               </div>
             </div>
@@ -183,7 +188,7 @@
             <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
               <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">2</span>
               <div>
-                <h3 class="font-bold text-lg text-slate-900">รายละเอียดอสังหาริมทรัพย์ (แสดงบนหน้าเว็บ)</h3>
+                <h3 class="font-bold text-base sm:text-lg text-slate-900">รายละเอียดอสังหาริมทรัพย์ (แสดงบนหน้าเว็บ)</h3>
                 <p class="text-xs text-slate-400">ระบุโซนและสเปกห้องเพื่อให้ลูกค้าค้นหาเจอได้ง่าย</p>
               </div>
             </div>
@@ -261,7 +266,7 @@
             <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
               <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">3</span>
               <div>
-                <h3 class="font-bold text-lg text-slate-900">ราคาและแนบรูปภาพทรัพย์</h3>
+                <h3 class="font-bold text-base sm:text-lg text-slate-900">ราคาและแนบรูปภาพทรัพย์</h3>
                 <p class="text-xs text-slate-400">สามารถอัปโหลดรูปจากมือถือ หรือวางลิงก์เพื่อให้ระบบดึงรูปปกให้อัตโนมัติ</p>
               </div>
             </div>
@@ -310,7 +315,7 @@
         <div class="lg:col-span-4 lg:sticky lg:top-28 space-y-6">
           <div class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-7 text-white shadow-xl shadow-emerald-600/15">
             <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl mb-4">🔍</div>
-            <h2 class="text-2xl font-bold leading-snug">นัดชมห้อง / ให้ระบบช่วยหาห้องตามสเปก</h2>
+            <h2 class="text-xl font-bold leading-snug">นัดชมห้อง / ให้ระบบช่วยหาห้องตามสเปก</h2>
             <p class="text-emerald-100 text-sm mt-2 leading-relaxed">
               ระบุสเปกและงบประมาณที่คุณต้องการ หรือหากคุณกดปุ่มมาจากหน้าแคตตาล็อก รหัสห้องที่คุณสนใจจะถูกระบุไว้ในช่องโครงการให้อัตโนมัติเพื่อให้แอดมินติดต่อกลับทันทีครับ
             </p>
@@ -319,7 +324,7 @@
 
         <div class="lg:col-span-8 space-y-6">
           <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 space-y-5">
-            <h3 class="font-bold text-lg text-slate-900 border-b border-slate-100 pb-4">👤 ข้อมูลผู้ติดต่อ (ปิดเป็นความลับ เฉพาะแอดมินติดต่อกลับ)</h3>
+            <h3 class="font-bold text-base sm:text-lg text-slate-900 border-b border-slate-100 pb-4">👤 ข้อมูลผู้ติดต่อ (ปิดเป็นความลับ เฉพาะแอดมินติดต่อกลับ)</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">ชื่อของคุณ *</label><input type="text" name="buyerName" required placeholder="ระบุชื่อเล่นหรือชื่อจริง" class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"></div>
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">เบอร์โทรศัพท์ / LINE ID *</label><input type="text" name="buyerContact" required placeholder="08x-xxx-xxxx / Line ID" class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"></div>
@@ -327,7 +332,7 @@
           </div>
 
           <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 space-y-5">
-            <h3 class="font-bold text-lg text-slate-900 border-b border-slate-100 pb-4">🎯 สเปกที่พักและงบประมาณที่ต้องการ</h3>
+            <h3 class="font-bold text-base sm:text-lg text-slate-900 border-b border-slate-100 pb-4">🎯 สเปกที่พักและงบประมาณที่ต้องการ</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">ความต้องการ *</label><select name="reqListingType" id="buyerReqType" class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-medium"><option value="เช่า">ต้องการเช่า</option><option value="ขาย">ต้องการซื้อ</option></select></div>
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">ประเภทห้องที่ต้องการ *</label><select name="reqRoomType" id="buyerReqRoom" class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-medium"><option value="Studio">Studio</option><option value="1 Bedroom">1 Bedroom</option><option value="2 Bedrooms">2 Bedrooms</option><option value="3+ Bedrooms">3+ Bedrooms</option><option value="บ้านเดี่ยว / ทาวน์โฮม">บ้านเดี่ยว / ทาวน์โฮม</option><option value="ที่ดิน / อื่นๆ">ที่ดิน / อื่นๆ</option></select></div>
@@ -379,7 +384,7 @@
         <div class="lg:col-span-4 lg:sticky lg:top-28 space-y-6">
           <div class="bg-gradient-to-br from-purple-600 to-indigo-800 rounded-3xl p-7 text-white shadow-xl shadow-purple-600/15">
             <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl mb-4">🤝</div>
-            <h2 class="text-2xl font-bold leading-snug">พันธมิตรเครือข่าย Co-Agent</h2>
+            <h2 class="text-xl font-bold leading-snug">พันธมิตรเครือข่าย Co-Agent</h2>
             <p class="text-purple-100 text-sm mt-2 leading-relaxed">
               ส่งทรัพย์ในมือคุณเข้าสู่หน้าแคตตาล็อกของเรา โดยระบบจะ **ซ่อนชื่อ เบอร์โทร และ LINE ของคุณไว้ไม่ให้คนนอกเห็น** เพื่อป้องกันการถูกตัดหน้า 100%
             </p>
@@ -388,7 +393,7 @@
 
         <div class="lg:col-span-8 space-y-6">
           <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 space-y-5">
-            <h3 class="font-bold text-lg text-slate-900 border-b border-slate-100 pb-4">🤝 ข้อมูลตัวแทน (Co-Agent) — <span class="text-purple-600 text-sm">🔒 ปิดซ่อนจากหน้าเว็บสาธารณะ</span></h3>
+            <h3 class="font-bold text-base sm:text-lg text-slate-900 border-b border-slate-100 pb-4">🤝 ข้อมูลตัวแทน (Co-Agent) — <span class="text-purple-600 text-sm">🔒 ปิดซ่อนจากหน้าเว็บสาธารณะ</span></h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">ชื่อ - นามสกุล (ตัวแทน) *</label><input type="text" name="agentName" required class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl"></div>
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">สังกัดบริษัท / อิสระ</label><input type="text" name="company" placeholder="ระบุชื่อบริษัท หรือ อิสระ" class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl"></div>
@@ -398,7 +403,7 @@
           </div>
 
           <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200/80 space-y-5">
-            <h3 class="font-bold text-lg text-slate-900 border-b border-slate-100 pb-4">🏢 รายละเอียดทรัพย์ที่นำเสนอ</h3>
+            <h3 class="font-bold text-base sm:text-lg text-slate-900 border-b border-slate-100 pb-4">🏢 รายละเอียดทรัพย์ที่นำเสนอ</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">ประเภทอสังหาฯ *</label><select name="propType" class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl font-medium"><option value="คอนโด">คอนโด</option><option value="บ้านเดี่ยว">บ้านเดี่ยว</option><option value="ทาวน์โฮม">ทาวน์โฮม</option><option value="ที่ดิน">ที่ดิน</option></select></div>
               <div><label class="block text-sm font-semibold text-slate-700 mb-2">ชื่อโครงการ / ทำเล *</label><input type="text" name="projectZone" required class="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl"></div>
@@ -551,7 +556,6 @@
     let selectedImages = { owner: [], agent: [] };
     let allProperties = [];
 
-    // คลังภาพถ่ายสถาปัตยกรรมและห้องตัวอย่างระดับพรีเมียม แยกตามประเภททรัพย์ (Smart Cover Selector)
     const SMART_COVERS = {
       condo1: [
         'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80',
@@ -578,7 +582,6 @@
       ]
     };
 
-    // เลือกรูปที่ตรงกับสเปกห้องและรหัสทรัพย์โดยอัตโนมัติ
     function getSmartCoverImage(item) {
       if (item.images && item.images.length > 0) {
         return { url: item.images[0], isReal: true, count: item.images.length };
@@ -670,7 +673,7 @@
                 <div class="text-xs font-bold text-indigo-600 mb-1 flex items-center gap-1">
                   <span>📍</span> ${escapeHTML(item.zone)}
                 </div>
-                <h3 class="font-extrabold text-lg text-slate-900 line-clamp-1">${escapeHTML(item.project)}</h3>
+                <h3 class="font-bold text-base sm:text-lg text-slate-900 line-clamp-1">${escapeHTML(item.project)}</h3>
                 <p class="text-xs text-slate-500 mt-1 line-clamp-2">${escapeHTML(item.room)} ${item.size && item.size !== '-' ? `• ขนาด ${escapeHTML(item.size)} ตร.ม.` : ''} ${item.floor && item.floor !== '-' ? `• ชั้น/ตึก: ${escapeHTML(item.floor)}` : ''}</p>
               </div>
 
