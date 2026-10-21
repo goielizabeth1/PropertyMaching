@@ -137,9 +137,15 @@ export default async function handler(req, res) {
 
   const genId = (prefix) => `${prefix}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
+  // แก้ไขตรงนี้: กรองเอาเฉพาะลิงก์ที่เป็นไฟล์รูปภาพจริงๆ เท่านั้น
   function extractValidImageUrls(linksStr) {
     if (!linksStr || linksStr === '-') return [];
-    return linksStr.split(' , ').map(s => s.trim()).filter(u => u.startsWith('http'));
+    return linksStr.split(' , ').map(s => s.trim()).filter(u => 
+      u.includes('firebasestorage') || 
+      /\.(jpg|jpeg|png|webp)(\?.*)?$/i.test(u) || 
+      u.includes('unsplash.com') || 
+      u.includes('drive.google.com')
+    );
   }
 
   try {
@@ -148,7 +154,6 @@ export default async function handler(req, res) {
       const agents = await fetchCollection('co_agents');
       const publicData = [];
 
-      // ดึงทุกรายการที่มีสถานะว่าง หรือไม่ได้ระบุสถานะ
       inv.filter(i => !i.status || i.status.includes('ว่าง') || i.status.includes('Available')).forEach(i => {
         publicData.push({ id: i.prop_id, source: 'Owner', type: i.listing_type, zone: i.zone, project: i.project_name, room: i.room_type, size: i.size_sqm, floor: i.floor, price: Number(i.price), images: extractValidImageUrls(i.images_link), lat: i.lat ? Number(i.lat) : null, lng: i.lng ? Number(i.lng) : null });
       });
