@@ -137,7 +137,6 @@ export default async function handler(req, res) {
 
   const genId = (prefix) => `${prefix}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-  // แก้ไขตรงนี้: กรองเอาเฉพาะลิงก์ที่เป็นไฟล์รูปภาพจริงๆ เท่านั้น
   function extractValidImageUrls(linksStr) {
     if (!linksStr || linksStr === '-') return [];
     return linksStr.split(' , ').map(s => s.trim()).filter(u => 
@@ -229,19 +228,33 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
+    // แก้ไขระบบปิดงานอัตโนมัติในฟังก์ชันจับคู่
     async function checkMatching() {
-      const inv = (await fetchCollection('inventory')).filter(i => !i.status || i.status.includes('ว่าง'));
+      const inv = (await fetchCollection('inventory')).filter(i => !i.status || i.status.includes('ว่าง') || i.status.includes('Available'));
       const buyers = await fetchCollection('buyers');
       const logs = await fetchCollection('matching_logs');
       const matchedSet = new Set(logs.map(l => `${l.lead_id}_${l.prop_id}`));
 
       for (const b of buyers) {
         for (const p of inv) {
-          if (matchedSet.has(`${b.lead_id}_${p.prop_id}`)) continue;
-          if (((b.req_listing_type === p.listing_type) || (p.listing_type === 'ขายและเช่า')) && (b.req_zone === p.zone) && (b.req_room_type === p.room_type) && (Number(p.price) >= (Number(b.min_budget)||0) && Number(p.price) <= (Number(b.max_budget)||Infinity))) {
-            await saveDocument('matching_logs', genId('LOG'), { lead_id: b.lead_id, prop_id: p.prop_id });
+          // ข้ามทรัพย์ที่ถูกจับคู่และปิดงานไปแล้ว
+          if (matchedSet.has(`${b.lead_id}_${p.prop_id}`) || p.status === 'จับคู่แล้ว (Matched)') continue;
+          
+          if (((b.req_listing_type === p.listing_type) || (p.listing_type === 'ขายและเช่า')) && 
+              (b.req_zone === p.zone) && 
+              (b.req_room_type === p.room_type) && 
+              (Number(p.price) >= (Number(b.min_budget)||0) && Number(p.price) <= (Number(b.max_budget)||Infinity))) {
+            
+            // 1. บันทึกประวัติ
+            await saveDocument('matching_logs', genId('LOG'), { lead_id: b.lead_id, prop_id: p.prop_id, created_at: Date.now() });
             matchedSet.add(`${b.lead_id}_${p.prop_id}`);
-            await sendLine(`🎯 [จับคู่สำเร็จ!]\nลูกค้า: ${b.buyer_name}\nคู่กับรหัส: ${p.prop_id}`);
+            
+            // 2. ปิดงานอัตโนมัติ: เปลี่ยนสถานะเป็น "จับคู่แล้ว"
+            await updateDocument('inventory', p._docId || p.prop_id, { status: 'จับคู่แล้ว (Matched)' });
+            p.status = 'จับคู่แล้ว (Matched)'; 
+            
+            // 3. แจ้ง LINE
+            await sendLine(`🎯 [จับคู่สำเร็จและปิดงานอัตโนมัติ!]\nลูกค้า: ${b.buyer_name}\nคู่กับรหัส: ${p.prop_id} (${p.project_name})\n(ระบบได้ซ่อนทรัพย์นี้จากหน้าเว็บแล้ว)`);
           }
         }
       }
