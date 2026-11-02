@@ -33,12 +33,27 @@
 
   <!-- TOP GLASSMORPHISM NAVBAR -->
   <header class="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 px-4 lg:px-10 h-[76px] flex items-center justify-between shadow-sm">
-    <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('catalog')">
-      <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-blue-500/25">
-        ✨
+    <div class="flex items-center gap-3 cursor-pointer group" onclick="switchView('catalog')">
+      
+      <!-- โลโก้ใหม่: Isometric Smart Building + Matching Core -->
+      <div class="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/30 border border-white/20 overflow-hidden transition-transform duration-300 group-hover:scale-105">
+        
+        <!-- เอฟเฟกต์แสงสะท้อน (Glass effect) ด้านใน -->
+        <div class="absolute -top-4 -right-4 w-10 h-10 bg-white/25 blur-md rounded-full"></div>
+        <div class="absolute bottom-0 left-1 w-6 h-3 bg-white/15 blur-sm rounded-full"></div>
+        
+        <!-- ไอคอน 3D Hexagon / Property Node -->
+        <svg class="w-6 h-6 text-white relative z-10 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          <!-- จุดแกนกลาง (Core Match) -->
+          <circle cx="12" cy="12" r="2.5" fill="#4f46e5" stroke="white" stroke-width="1.5"></circle>
+        </svg>
       </div>
+
       <div>
-        <span class="font-bold text-lg tracking-tight text-slate-900 block leading-none">PropMatch<span class="text-blue-600">.Pro</span></span>
+        <span class="font-bold text-lg tracking-tight text-slate-900 block leading-none transition-colors group-hover:text-blue-600">PropMatch<span class="text-blue-600">.Pro</span></span>
         <span class="text-[11px] text-slate-500 font-medium">ระบบจับคู่อสังหาริมทรัพย์อัจฉริยะ 24 ชม.</span>
       </div>
     </div>
