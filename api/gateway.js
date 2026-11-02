@@ -156,9 +156,12 @@ export default async function handler(req, res) {
       inv.filter(i => !i.status || i.status.includes('ว่าง') || i.status.includes('Available')).forEach(i => {
         publicData.push({ id: i.prop_id, source: 'Owner', type: i.listing_type, zone: i.zone, project: i.project_name, room: i.room_type, size: i.size_sqm, floor: i.floor, price: Number(i.price), images: extractValidImageUrls(i.images_link), lat: i.lat ? Number(i.lat) : null, lng: i.lng ? Number(i.lng) : null });
       });
-      agents.forEach(a => {
+      
+      // อัปเดต: ให้คัดกรอง Co-Agent ที่โดนจับคู่แล้ว (สถานะไม่ใช่ว่าง) ออกจากหน้าเว็บ
+      agents.filter(a => !a.status || a.status.includes('ว่าง') || a.status.includes('Available')).forEach(a => {
         publicData.push({ id: a.id, source: 'Co-Agent', type: a.prop_type, zone: a.project_zone, project: a.project_zone, room: a.details, size: '-', floor: '-', price: Number(a.price), images: extractValidImageUrls(a.images_link), lat: a.lat ? Number(a.lat) : null, lng: a.lng ? Number(a.lng) : null });
       });
+      
       return res.status(200).json({ success: true, data: publicData });
     }
 
@@ -201,9 +204,10 @@ export default async function handler(req, res) {
       if (data.imagesLink) allImages.push(data.imagesLink.trim());
       
       await saveDocument('co_agents', coId, {
-        id: coId, agent_name: data.agentName, company: data.company || 'อิสระ', phone: data.phone, line_id: data.lineId, prop_type: data.propType, project_zone: data.projectZone, details: data.details, price: Number(data.price) || 0, images_link: allImages.length > 0 ? allImages.join(' , ') : '-', commission_type: data.commissionType, lat: data.lat ? Number(data.lat) : null, lng: data.lng ? Number(data.lng) : null, created_at: Date.now()
+        id: coId, agent_name: data.agentName, company: data.company || 'อิสระ', phone: data.phone, line_id: data.lineId, prop_type: data.propType, project_zone: data.projectZone, details: data.details, price: Number(data.price) || 0, images_link: allImages.length > 0 ? allImages.join(' , ') : '-', commission_type: data.commissionType, lat: data.lat ? Number(data.lat) : null, lng: data.lng ? Number(data.lng) : null, status: 'ว่าง (Available)', created_at: Date.now()
       });
       await sendLine(`🤝 [Co-Agent ส่งทรัพย์]\nรหัส: ${coId}\nโดย: ${data.agentName}\nโครงการ: ${data.projectZone}\nราคา: ${Number(data.price).toLocaleString()} บ.`);
+      await checkMatching();
       return res.status(200).json({ success: true, id: coId });
     }
 
@@ -213,7 +217,7 @@ export default async function handler(req, res) {
         success: true,
         inventory: inv.map(i => ({ row: i._docId || i.prop_id, propId: i.prop_id, ownerName: i.owner_name, contact: i.contact, type: i.listing_type, zone: i.zone, project: i.project_name, room: i.room_type, price: i.price, imagesLink: i.images_link, status: i.status })),
         buyers: buyers.map(b => ({ leadId: b.lead_id, buyerName: b.buyer_name, contact: b.contact, type: b.req_listing_type, zone: b.req_zone, room: b.req_room_type, minBudget: b.min_budget, maxBudget: b.max_budget })),
-        coAgents: agents.map(a => ({ id: a.id, agentName: a.agent_name, company: a.company, phone: a.phone, lineId: a.line_id, propType: a.prop_type, projectZone: a.project_zone, details: a.details, price: a.price, imagesLink: a.images_link, commissionType: a.commission_type }))
+        coAgents: agents.map(a => ({ id: a.id, agentName: a.agent_name, company: a.company, phone: a.phone, lineId: a.line_id, propType: a.prop_type, projectZone: a.project_zone, details: a.details, price: a.price, imagesLink: a.images_link, commissionType: a.commission_type, status: a.status || 'ว่าง (Available)' }))
       });
     }
 
@@ -228,32 +232,46 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
-    // แก้ไขระบบปิดงานอัตโนมัติในฟังก์ชันจับคู่
+    // ฟังก์ชันจับคู่อัจฉริยะ อัปเดตให้รองรับทั้ง เจ้าของห้อง และ Co-Agent
     async function checkMatching() {
+      // ดึงทรัพย์ที่สถานะว่างทั้งหมด
       const inv = (await fetchCollection('inventory')).filter(i => !i.status || i.status.includes('ว่าง') || i.status.includes('Available'));
+      const agents = (await fetchCollection('co_agents')).filter(a => !a.status || a.status.includes('ว่าง') || a.status.includes('Available'));
+      
       const buyers = await fetchCollection('buyers');
       const logs = await fetchCollection('matching_logs');
       const matchedSet = new Set(logs.map(l => `${l.lead_id}_${l.prop_id}`));
 
+      // นำทรัพย์ 2 ฐานข้อมูลมารวมกันเพื่อเตรียมจับคู่
+      const allProps = [];
+      inv.forEach(i => allProps.push({
+         collection: 'inventory', docId: i._docId || i.prop_id, prop_id: i.prop_id, project_name: i.project_name, 
+         zone: i.zone, listing_type: i.listing_type, room_type: i.room_type, price: Number(i.price)
+      }));
+      agents.forEach(a => allProps.push({
+         collection: 'co_agents', docId: a._docId || a.id, prop_id: a.id, project_name: a.project_zone, 
+         zone: a.project_zone, listing_type: 'ขายและเช่า', room_type: a.prop_type, price: Number(a.price)
+      }));
+
       for (const b of buyers) {
-        for (const p of inv) {
-          // ข้ามทรัพย์ที่ถูกจับคู่และปิดงานไปแล้ว
-          if (matchedSet.has(`${b.lead_id}_${p.prop_id}`) || p.status === 'จับคู่แล้ว (Matched)') continue;
+        for (const p of allProps) {
+          // หากคู่ไหนเคยแมตช์ไปแล้วให้ข้าม
+          if (matchedSet.has(`${b.lead_id}_${p.prop_id}`)) continue;
           
-          if (((b.req_listing_type === p.listing_type) || (p.listing_type === 'ขายและเช่า')) && 
-              (b.req_zone === p.zone) && 
-              (b.req_room_type === p.room_type) && 
-              (Number(p.price) >= (Number(b.min_budget)||0) && Number(p.price) <= (Number(b.max_budget)||Infinity))) {
-            
+          let isTypeMatch = (b.req_listing_type === p.listing_type) || (p.listing_type === 'ขายและเช่า');
+          let isZoneMatch = p.collection === 'co_agents' ? (p.zone && (p.zone.includes(b.req_zone) || b.req_zone.includes(p.zone))) : (b.req_zone === p.zone);
+          let isRoomMatch = p.collection === 'co_agents' ? true : (b.req_room_type === p.room_type); // นายหน้าไม่มีระบุประเภทห้องย่อยให้ผ่าน
+          let isPriceMatch = (p.price >= (Number(b.min_budget)||0) && p.price <= (Number(b.max_budget)||Infinity));
+
+          if (isTypeMatch && isZoneMatch && isRoomMatch && isPriceMatch) {
             // 1. บันทึกประวัติ
             await saveDocument('matching_logs', genId('LOG'), { lead_id: b.lead_id, prop_id: p.prop_id, created_at: Date.now() });
             matchedSet.add(`${b.lead_id}_${p.prop_id}`);
             
-            // 2. ปิดงานอัตโนมัติ: เปลี่ยนสถานะเป็น "จับคู่แล้ว"
-            await updateDocument('inventory', p._docId || p.prop_id, { status: 'จับคู่แล้ว (Matched)' });
-            p.status = 'จับคู่แล้ว (Matched)'; 
+            // 2. อัปเดตสถานะเป็น "จับคู่แล้ว" (รองรับทั้งฐาน inventory และ co_agents)
+            await updateDocument(p.collection, p.docId, { status: 'จับคู่แล้ว (Matched)' });
             
-            // 3. แจ้ง LINE
+            // 3. แจ้ง LINE แจ้งเตือนปิดงาน
             await sendLine(`🎯 [จับคู่สำเร็จและปิดงานอัตโนมัติ!]\nลูกค้า: ${b.buyer_name}\nคู่กับรหัส: ${p.prop_id} (${p.project_name})\n(ระบบได้ซ่อนทรัพย์นี้จากหน้าเว็บแล้ว)`);
           }
         }
