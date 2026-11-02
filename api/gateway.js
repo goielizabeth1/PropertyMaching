@@ -138,11 +138,10 @@ export default async function handler(req, res) {
     );
   }
 
-  // ระบบจับคู่อัจฉริยะ (ยืดหยุ่นเรื่องตัวพิมพ์และช่องว่าง)
   async function checkMatching() {
     const inv = (await fetchCollection('inventory')).filter(i => !i.status || i.status.includes('ว่าง') || i.status.includes('Available'));
     const agents = (await fetchCollection('co_agents')).filter(a => !a.status || a.status.includes('ว่าง') || a.status.includes('Available'));
-    const buyers = (await fetchCollection('buyers')).filter(b => !b.status || !b.status.includes('จับคู่แล้ว'));
+    const buyers = (await fetchCollection('buyers')).filter(b => !b.status || !b.status.includes('ปิด'));
     const logs = await fetchCollection('matching_logs');
     
     const matchedSet = new Set(logs.map(l => `${l.lead_id}_${l.prop_id}`));
@@ -158,13 +157,11 @@ export default async function handler(req, res) {
         if (matchedSet.has(`${b.lead_id}_${p.prop_id}`)) continue;
         
         let isTypeMatch = (b.req_listing_type === p.listing_type) || (p.listing_type === 'ขายและเช่า');
-        
         let bZone = normalize(b.req_zone);
         let pZone = normalize(p.zone);
         let bProj = normalize(b.req_project);
         let pProj = normalize(p.project_name);
         
-        // เช็กแบบยืดหยุ่น: โซน หรือ โครงการ มีคำตรงกันไหม
         let isZoneMatch = (pZone.includes(bZone) || bZone.includes(pZone));
         if (bProj && bProj !== '-' && pProj !== '-' && (pProj.includes(bProj) || bProj.includes(pProj))) isZoneMatch = true;
         if (bZone && pProj !== '-' && pProj.includes(bZone)) isZoneMatch = true;
@@ -176,12 +173,13 @@ export default async function handler(req, res) {
           await saveDocument('matching_logs', genId('LOG'), { lead_id: b.lead_id, prop_id: p.prop_id, created_at: Date.now() });
           matchedSet.add(`${b.lead_id}_${p.prop_id}`);
           
-          await updateDocument(p.collection, p.docId, { status: 'จับคู่แล้ว (Matched)' });
-          await updateDocument('buyers', b._docId || b.lead_id, { status: 'จับคู่แล้ว (Matched)' });
-          b.status = 'จับคู่แล้ว (Matched)';
+          // สั่งปิดการขายให้รายการทรัพย์ฝั่งเจ้าของและนายหน้า
+          await updateDocument(p.collection, p.docId, { status: 'ปิดการขาย (Sold/Rented)' });
+          await updateDocument('buyers', b._docId || b.lead_id, { status: '✅ [ปิดงานสำเร็จ]' });
+          b.status = '✅ [ปิดงานสำเร็จ]';
           
-          await sendLine(`🎯 [จับคู่สำเร็จและปิดงานอัตโนมัติ!]\nลูกค้า: ${b.buyer_name}\nคู่กับรหัส: ${p.prop_id} (${p.project_name})\n(ระบบได้ซ่อนทรัพย์นี้จากหน้าเว็บ และอัปเดตสถานะลูกค้าว่าปิดการขายแล้ว)`);
-          break; // เมื่อลูกค้าคนนี้ได้ห้องแล้ว ให้ข้ามไปหาให้ลูกค้าคนถัดไป
+          await sendLine(`🎯 [ปิดงานสำเร็จ!]\nลูกค้า: ${b.buyer_name}\nคู่กับรหัส: ${p.prop_id} (${p.project_name})\n(ระบบซ่อนทรัพย์นี้จากหน้าเว็บ และขึ้นสถานะปิดการขายในแอดมินแล้ว)`);
+          break; 
         }
       }
     }
@@ -243,18 +241,51 @@ export default async function handler(req, res) {
     }
 
     if (action === 'getAdminData') {
-      // สั่งให้สแกนตรวจจับคู่ข้อมูลตกหล่นทุกครั้งที่เปิดหน้าแอดมิน
       await checkMatching();
-      
       const [inv, buyers, agents] = await Promise.all([fetchCollection('inventory'), fetchCollection('buyers'), fetchCollection('co_agents')]);
+      
+      const checkStatus = (statusStr) => (statusStr && (statusStr.includes('ปิด') || statusStr.includes('จับคู่')));
+
       return res.status(200).json({
         success: true,
-        inventory: inv.sort((a,b) => (b.created_at||0) - (a.created_at||0)).map(i => ({ row: i._docId || i.prop_id, propId: i.prop_id, ownerName: i.owner_name, contact: i.contact, type: i.listing_type, zone: i.zone, project: i.project_name, room: i.room_type, price: i.price, imagesLink: i.images_link, status: i.status })),
-        
-        // แทรกสถานะ "✅ [ปิดการขาย]" ไว้หน้าชื่อลูกค้าที่จับคู่สำเร็จแล้วให้เห็นชัดเจน
-        buyers: buyers.sort((a,b) => (b.created_at||0) - (a.created_at||0)).map(b => ({ leadId: b.lead_id, buyerName: (b.status && b.status.includes('จับคู่')) ? `✅ [ปิดการขาย] ${b.buyer_name}` : b.buyer_name, contact: b.contact, type: b.req_listing_type, zone: b.req_zone, room: b.req_room_type, minBudget: b.min_budget, maxBudget: b.max_budget })),
-        
-        coAgents: agents.sort((a,b) => (b.created_at||0) - (a.created_at||0)).map(a => ({ id: a.id, agentName: a.agent_name, company: a.company, phone: a.phone, lineId: a.line_id, propType: a.prop_type, projectZone: a.project_zone, details: a.details, price: a.price, imagesLink: a.images_link, commissionType: a.commission_type, status: a.status || 'ว่าง (Available)' }))
+        // แทรกสัญลักษณ์เข้าคอลัมน์ชื่อเจ้าของ และดันสถานะในดรอปดาวน์ให้เป็น ปิดการขาย
+        inventory: inv.sort((a,b) => (b.created_at||0) - (a.created_at||0)).map(i => ({ 
+          row: i._docId || i.prop_id, 
+          propId: i.prop_id, 
+          ownerName: checkStatus(i.status) ? `✅ [ปิดงาน] ${i.owner_name}` : i.owner_name, 
+          contact: i.contact, 
+          type: i.listing_type, 
+          zone: i.zone, 
+          project: i.project_name, 
+          room: i.room_type, 
+          price: i.price, 
+          imagesLink: i.images_link, 
+          status: checkStatus(i.status) ? 'ปิดการขาย (Sold/Rented)' : (i.status || 'ว่าง (Available)') 
+        })),
+        buyers: buyers.sort((a,b) => (b.created_at||0) - (a.created_at||0)).map(b => ({ 
+          leadId: b.lead_id, 
+          buyerName: checkStatus(b.status) ? `✅ [ปิดงานสำเร็จ] ${b.buyer_name}` : b.buyer_name, 
+          contact: b.contact, 
+          type: b.req_listing_type, 
+          zone: b.req_zone, 
+          room: b.req_room_type, 
+          minBudget: b.min_budget, 
+          maxBudget: b.max_budget 
+        })),
+        coAgents: agents.sort((a,b) => (b.created_at||0) - (a.created_at||0)).map(a => ({ 
+          id: a.id, 
+          agentName: checkStatus(a.status) ? `✅ [ปิดงาน] ${a.agent_name}` : a.agent_name, 
+          company: a.company, 
+          phone: a.phone, 
+          lineId: a.line_id, 
+          propType: a.prop_type, 
+          projectZone: a.project_zone, 
+          details: a.details, 
+          price: a.price, 
+          imagesLink: a.images_link, 
+          commissionType: a.commission_type, 
+          status: checkStatus(a.status) ? 'ปิดการขาย (Sold/Rented)' : (a.status || 'ว่าง (Available)') 
+        }))
       });
     }
 
