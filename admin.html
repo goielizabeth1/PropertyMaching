@@ -10,6 +10,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen p-4 sm:p-6">
 
+  <!-- LOGIN BOX -->
   <div id="loginBox" class="max-w-md mx-auto mt-16 bg-white p-8 rounded-3xl shadow-xl text-center border border-slate-200">
     <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🔐</div>
     <h2 class="text-xl font-bold text-slate-800 mb-1">เข้าสู่ระบบผู้ดูแล (Admin)</h2>
@@ -26,6 +27,7 @@
     <a href="/" class="block mt-6 text-xs text-slate-400 hover:text-slate-600">← กลับหน้าหลักเว็บไซต์</a>
   </div>
 
+  <!-- DASHBOARD BOX -->
   <div id="dashboardBox" class="max-w-7xl mx-auto hidden space-y-6">
     <div class="bg-white p-6 rounded-3xl shadow-sm border flex flex-col sm:flex-row justify-between items-center gap-4">
       <div>
@@ -39,45 +41,109 @@
       </div>
     </div>
 
+    <!-- กล่องแจ้งเตือนสถานะการบันทึก -->
+    <div id="toastAlert" class="hidden fixed bottom-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-xl font-bold text-sm text-white bg-slate-900 transition-all"></div>
+
     <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-3">
       <span class="text-lg text-slate-400 pl-2">🔍</span>
-      <input type="text" id="searchInput" oninput="filterData()" placeholder="พิมพ์ค้นหา รหัส, ชื่อโครงการ, โซน, ชื่อคน หรือเบอร์โทร..." class="w-full p-2 text-sm outline-none font-medium">
+      <input type="text" id="searchInput" oninput="filterData()" placeholder="พิมพ์ค้นหา รหัส, ชื่อโครงการ, โซน, ชื่อคน, เบอร์โทร หรือรหัสคู่แมตช์..." class="w-full p-2 text-sm outline-none font-medium">
     </div>
 
+    <!-- 1. ตารางคลังทรัพย์ (Inventory) -->
     <div id="invSection" class="bg-white rounded-3xl shadow-sm border overflow-hidden">
-      <div class="p-4 bg-slate-50 border-b font-semibold text-slate-700 flex justify-between"><span>📋 รายการทรัพย์ฝากขาย / เช่า</span><span id="invCount" class="text-xs text-slate-500"></span></div>
-      <div class="overflow-x-auto"><table class="w-full text-left border-collapse text-sm">
-        <thead><tr class="bg-slate-100 text-slate-600 border-b"><th class="p-3">รหัส</th><th class="p-3">เจ้าของ / ติดต่อ</th><th class="p-3">โครงการ (โซน)</th><th class="p-3">ราคา</th><th class="p-3">รูปภาพ</th><th class="p-3">สถานะ</th><th class="p-3 text-center">จัดการ</th></tr></thead>
-        <tbody id="invTableBody" class="divide-y"></tbody>
-      </table></div>
+      <div class="p-4 bg-slate-50 border-b font-semibold text-slate-700 flex justify-between">
+        <span>📋 รายการทรัพย์ฝากขาย / เช่า (เลือกสถานะและจับคู่ลูกค้าได้ทันที)</span>
+        <span id="invCount" class="text-xs text-slate-500"></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-100 text-slate-600 border-b">
+              <th class="p-3">รหัส</th>
+              <th class="p-3">เจ้าของ / ติดต่อ</th>
+              <th class="p-3">โครงการ (โซน)</th>
+              <th class="p-3">ราคา</th>
+              <th class="p-3">รูปภาพ</th>
+              <th class="p-3 w-64">สถานะ & จับคู่ลูกค้า (Manual Match)</th>
+              <th class="p-3 text-center">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="invTableBody" class="divide-y"></tbody>
+        </table>
+      </div>
     </div>
 
+    <!-- 2. ตารางลูกค้าหาห้อง (Buyers) -->
     <div id="buyerSection" class="bg-white rounded-3xl shadow-sm border overflow-hidden hidden">
-      <div class="p-4 bg-slate-50 border-b font-semibold text-slate-700 flex justify-between"><span>🎯 รายชื่อลูกค้าค้นหาห้อง</span><span id="buyerCount" class="text-xs text-slate-500"></span></div>
-      <div class="overflow-x-auto"><table class="w-full text-left border-collapse text-sm">
-        <thead><tr class="bg-slate-100 text-slate-600 border-b"><th class="p-3">รหัส</th><th class="p-3">ลูกค้า / ติดต่อ</th><th class="p-3">ความต้องการ</th><th class="p-3">โซน / ประเภทห้อง</th><th class="p-3">งบประมาณ</th><th class="p-3 text-center">จัดการ</th></tr></thead>
-        <tbody id="buyerTableBody" class="divide-y"></tbody>
-      </table></div>
+      <div class="p-4 bg-slate-50 border-b font-semibold text-slate-700 flex justify-between">
+        <span>🎯 รายชื่อลูกค้าค้นหาห้อง</span>
+        <span id="buyerCount" class="text-xs text-slate-500"></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-100 text-slate-600 border-b">
+              <th class="p-3">รหัสลูกค้า</th>
+              <th class="p-3">ลูกค้า / ติดต่อ</th>
+              <th class="p-3">ความต้องการ</th>
+              <th class="p-3">โซน / ประเภทห้อง</th>
+              <th class="p-3">งบประมาณ</th>
+              <th class="p-3">ห้องที่จับคู่แล้ว</th>
+              <th class="p-3 text-center">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="buyerTableBody" class="divide-y"></tbody>
+        </table>
+      </div>
     </div>
 
+    <!-- 3. ตาราง Co-Agent -->
     <div id="agentSection" class="bg-white rounded-3xl shadow-sm border overflow-hidden hidden">
-      <div class="p-4 bg-purple-50 border-b font-semibold text-purple-900 flex justify-between"><span>🤝 รายชื่อทรัพย์ Co-Agent</span><span id="agentCount" class="text-xs text-purple-700"></span></div>
-      <div class="overflow-x-auto"><table class="w-full text-left border-collapse text-sm">
-        <thead><tr class="bg-purple-100/60 text-purple-900 border-b"><th class="p-3">รหัส</th><th class="p-3">ตัวแทน / สังกัด</th><th class="p-3">เบอร์ / LINE</th><th class="p-3">โครงการ</th><th class="p-3">รายละเอียด / ราคา</th><th class="p-3">รูปภาพ</th><th class="p-3">คอมมิชชัน</th><th class="p-3 text-center">จัดการ</th></tr></thead>
-        <tbody id="agentTableBody" class="divide-y"></tbody>
-      </table></div>
+      <div class="p-4 bg-purple-50 border-b font-semibold text-purple-900 flex justify-between">
+        <span>🤝 รายชื่อทรัพย์ Co-Agent</span>
+        <span id="agentCount" class="text-xs text-purple-700"></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-purple-100/60 text-purple-900 border-b">
+              <th class="p-3">รหัส</th>
+              <th class="p-3">ตัวแทน / สังกัด</th>
+              <th class="p-3">เบอร์ / LINE</th>
+              <th class="p-3">โครงการ</th>
+              <th class="p-3">รายละเอียด / ราคา</th>
+              <th class="p-3">รูปภาพ</th>
+              <th class="p-3 w-60">สถานะ & จับคู่ลูกค้า</th>
+              <th class="p-3 text-center">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="agentTableBody" class="divide-y"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <script>
-    let adminData = null;
+    let adminData = { inventory: [], buyers: [], coAgents: [] };
     let savedPassword = '';
+
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toastAlert');
+      toast.textContent = msg;
+      toast.className = `fixed bottom-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-xl font-bold text-sm text-white transition-all ${isError ? 'bg-rose-600' : 'bg-emerald-600'}`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    function escapeHTML(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
 
     function formatImageLinks(linksStr) {
       if (!linksStr || linksStr === '-') return '<span class="text-xs text-slate-400">ไม่มีรูป</span>';
-      const urls = linksStr.split(' , ').map(s => s.trim()).filter(s => s.startsWith('http'));
+      const urls = String(linksStr).split(' , ').map(s => s.trim()).filter(s => s.startsWith('http'));
       if (urls.length === 0) return '<span class="text-xs text-slate-400">ไม่มีรูป</span>';
-      return urls.map((u, idx) => `<a href="${u}" target="_blank" class="inline-block px-2.5 py-1 m-0.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold border border-blue-200">📷 รูป ${idx + 1}</a>`).join('');
+      return urls.map((u, idx) => `<a href="${escapeHTML(u)}" target="_blank" class="inline-block px-2.5 py-1 m-0.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold border border-blue-200">📷 รูป ${idx + 1}</a>`).join('');
     }
 
     function callAdminAPI(action, data = {}) {
@@ -98,71 +164,170 @@
 
       callAdminAPI('getAdminData').then(res => {
         if (res.success) {
-          adminData = res;
+          adminData = {
+            inventory: res.inventory || [],
+            buyers: res.buyers || [],
+            coAgents: res.coAgents || []
+          };
           document.getElementById('loginBox').classList.add('hidden');
           document.getElementById('dashboardBox').classList.remove('hidden');
           renderTables(adminData.inventory, adminData.buyers, adminData.coAgents);
         } else {
-          err.textContent = res.message;
+          err.textContent = res.message || 'รหัสผ่านไม่ถูกต้อง';
           err.classList.remove('hidden');
           btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
         }
+      }).catch(() => {
+        err.textContent = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+        err.classList.remove('hidden');
+        btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
       });
     }
 
+    // สร้างตัวเลือก Dropdown รายชื่อลูกค้าสำหรับให้แอดมินจับคู่
+    function buildBuyerOptions(selectedBuyerId) {
+      let html = `<option value="">-- เลือกลูกค้าเพื่อจับคู่ --</option>`;
+      adminData.buyers.forEach(b => {
+        const isSelected = (b.leadId === selectedBuyerId) ? 'selected' : '';
+        html += `<option value="${escapeHTML(b.leadId)}" ${isSelected}>${escapeHTML(b.leadId)} : ${escapeHTML(b.buyerName)} (${escapeHTML(b.zone)})</option>`;
+      });
+      return html;
+    }
+
+    function getStatusStyle(status) {
+      if (!status || status === 'ว่าง') return 'bg-blue-50 text-blue-700 border-blue-200';
+      if (status.includes('ติดจอง')) return 'bg-amber-50 text-amber-700 border-amber-300';
+      if (status.includes('จับคู่') || status.includes('ปิด') || status.includes('Sold')) return 'bg-emerald-50 text-emerald-700 border-emerald-300';
+      return 'bg-slate-50 text-slate-700 border-slate-200';
+    }
+
     function renderTables(invList, buyerList, agentList) {
-      const invBody = document.getElementById('invTableBody'); invBody.innerHTML = '';
+      // 1. Render คลังทรัพย์
+      const invBody = document.getElementById('invTableBody'); 
+      invBody.innerHTML = '';
       invList.forEach(item => {
-        invBody.innerHTML += `<tr class="hover:bg-slate-50">
-          <td class="p-3 font-medium text-blue-600">${item.propId}</td>
-          <td class="p-3"><b>${item.ownerName}</b><br><span class="text-xs text-slate-500">${item.contact}</span></td>
-          <td class="p-3"><b>${item.project}</b> <span class="text-xs px-2 py-0.5 bg-slate-100 rounded">${item.type}</span><br><span class="text-xs text-slate-500">${item.zone} (${item.room})</span></td>
-          <td class="p-3 font-semibold text-emerald-600">${Number(item.price).toLocaleString()}</td>
+        const currentStatus = item.status || 'ว่าง';
+        const matchedBuyer = item.matchedBuyerId || '';
+        const statusClass = getStatusStyle(currentStatus);
+
+        invBody.innerHTML += `<tr class="hover:bg-slate-50 align-top">
+          <td class="p-3 font-bold text-blue-600">${escapeHTML(item.propId)}</td>
+          <td class="p-3"><b>${escapeHTML(item.ownerName)}</b><br><span class="text-xs text-slate-500">${escapeHTML(item.contact)}</span></td>
+          <td class="p-3"><b>${escapeHTML(item.project)}</b> <span class="text-xs px-2 py-0.5 bg-slate-100 rounded">${escapeHTML(item.type)}</span><br><span class="text-xs text-slate-500">${escapeHTML(item.zone)} (${escapeHTML(item.room)})</span></td>
+          <td class="p-3 font-semibold text-emerald-600">฿${Number(item.price || 0).toLocaleString()}</td>
           <td class="p-3">${formatImageLinks(item.imagesLink)}</td>
-          <td class="p-3">
-            ${(item.status && (item.status.includes('ปิด') || item.status.includes('Sold') || item.status.includes('จับคู่'))) 
-                ? `<span class="inline-block px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold shadow-sm border border-emerald-200">✅ ปิดการขาย</span>`
-                : (item.status && item.status.includes('ติดจอง'))
-                ? `<span class="inline-block px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold shadow-sm border border-yellow-200">🟡 ติดจอง</span>`
-                : `<span class="inline-block px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-bold shadow-sm border border-blue-200">🟢 ว่าง (Available)</span>`
-            }
+          <td class="p-3 space-y-1.5">
+            <!-- เลือกสถานะห้อง -->
+            <select onchange="changeStatus('${escapeHTML(item.propId)}', this.value, 'inv')" class="w-full p-2 rounded-xl text-xs font-bold border outline-none cursor-pointer ${statusClass}">
+              <option value="ว่าง" ${currentStatus === 'ว่าง' ? 'selected' : ''}>🟢 ว่าง (Available)</option>
+              <option value="ติดจอง" ${currentStatus === 'ติดจอง' ? 'selected' : ''}>🟡 ติดจอง (Reserved)</option>
+              <option value="จับคู่แล้ว" ${currentStatus === 'จับคู่แล้ว' || currentStatus.includes('ปิด') ? 'selected' : ''}>✅ จับคู่แล้ว / ปิดการขาย</option>
+            </select>
+            <!-- เลือกจับคู่ลูกค้า (Manual Match) -->
+            <select onchange="manualMatch('${escapeHTML(item.propId)}', this.value, 'inv')" class="w-full p-2 rounded-xl text-xs border border-slate-200 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+              ${buildBuyerOptions(matchedBuyer)}
+            </select>
+            ${matchedBuyer ? `<div class="text-[11px] font-bold text-emerald-600 px-1">🔗 คู่แมตช์: ${escapeHTML(matchedBuyer)}</div>` : ''}
           </td>
-          <td class="p-3 text-center"><button onclick="deleteRow('${item.propId}', 'inv')" class="p-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs">🗑️ ลบ</button></td>
+          <td class="p-3 text-center"><button onclick="deleteRow('${escapeHTML(item.propId)}', 'inv')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition">🗑️ ลบ</button></td>
         </tr>`;
       });
       document.getElementById('invCount').textContent = `ทั้งหมด ${invList.length} รายการ`;
 
-      const buyerBody = document.getElementById('buyerTableBody'); buyerBody.innerHTML = '';
+      // 2. Render ลูกค้าหาห้อง (เช็คว่าลูกค้ารายนี้ถูกผูกกับห้องไหนไว้บ้าง)
+      const buyerBody = document.getElementById('buyerTableBody'); 
+      buyerBody.innerHTML = '';
       buyerList.forEach(item => {
-        buyerBody.innerHTML += `<tr class="hover:bg-slate-50">
-          <td class="p-3 font-medium text-emerald-600">${item.leadId}</td>
-          <td class="p-3"><b>${item.buyerName}</b><br><span class="text-xs text-slate-500">${item.contact}</span></td>
-          <td class="p-3">${item.type}</td>
-          <td class="p-3"><b>${item.zone}</b><br><span class="text-xs text-slate-500">${item.room}</span></td>
-          <td class="p-3 font-semibold">${Number(item.minBudget).toLocaleString()} - ${Number(item.maxBudget).toLocaleString()}</td>
-          <td class="p-3 text-center"><button onclick="deleteRow('${item.leadId}', 'buyer')" class="p-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs">🗑️ ลบ</button></td>
+        // ค้นหาห้องที่จับคู่กับลูกค้ารายนี้อยู่
+        const matchedProps = [
+          ...adminData.inventory.filter(p => p.matchedBuyerId === item.leadId).map(p => `${p.propId} (${p.project})`),
+          ...adminData.coAgents.filter(a => a.matchedBuyerId === item.leadId).map(a => `${a.id} (${a.projectZone})`)
+        ];
+        const matchBadge = matchedProps.length > 0 
+          ? matchedProps.map(mp => `<span class="inline-block px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold m-0.5">✅ ${escapeHTML(mp)}</span>`).join('')
+          : `<span class="text-xs text-slate-400">ยังไม่ได้จับคู่</span>`;
+
+        buyerBody.innerHTML += `<tr class="hover:bg-slate-50 align-top">
+          <td class="p-3 font-bold text-emerald-600">${escapeHTML(item.leadId)}</td>
+          <td class="p-3"><b>${escapeHTML(item.buyerName)}</b><br><span class="text-xs text-slate-500">${escapeHTML(item.contact)}</span></td>
+          <td class="p-3">${escapeHTML(item.type)}<br><span class="text-xs text-slate-400">${escapeHTML(item.reqProject || '')}</span></td>
+          <td class="p-3"><b>${escapeHTML(item.zone)}</b><br><span class="text-xs text-slate-500">${escapeHTML(item.room)}</span></td>
+          <td class="p-3 font-semibold">฿${Number(item.minBudget || 0).toLocaleString()} - ${Number(item.maxBudget || 0).toLocaleString()}</td>
+          <td class="p-3">${matchBadge}</td>
+          <td class="p-3 text-center"><button onclick="deleteRow('${escapeHTML(item.leadId)}', 'buyer')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition">🗑️ ลบ</button></td>
         </tr>`;
       });
       document.getElementById('buyerCount').textContent = `ทั้งหมด ${buyerList.length} รายการ`;
 
-      const agentBody = document.getElementById('agentTableBody'); agentBody.innerHTML = '';
+      // 3. Render Co-Agent
+      const agentBody = document.getElementById('agentTableBody'); 
+      agentBody.innerHTML = '';
       agentList.forEach(item => {
-        agentBody.innerHTML += `<tr class="hover:bg-purple-50/30">
-          <td class="p-3 font-medium text-purple-700">${item.id}</td>
-          <td class="p-3"><b>${item.agentName}</b><br><span class="text-xs text-slate-500">${item.company}</span></td>
-          <td class="p-3"><b>${item.phone}</b><br><span class="text-xs text-slate-500">LINE: ${item.lineId}</span></td>
-          <td class="p-3"><b>${item.projectZone}</b><br><span class="text-xs text-purple-600">${item.propType}</span></td>
-          <td class="p-3"><p class="text-xs text-slate-600">${item.details}</p><b class="text-emerald-600">${Number(item.price).toLocaleString()}</b></td>
+        const currentStatus = item.status || 'ว่าง';
+        const matchedBuyer = item.matchedBuyerId || '';
+        const statusClass = getStatusStyle(currentStatus);
+
+        agentBody.innerHTML += `<tr class="hover:bg-purple-50/30 align-top">
+          <td class="p-3 font-bold text-purple-700">${escapeHTML(item.id)}</td>
+          <td class="p-3"><b>${escapeHTML(item.agentName)}</b><br><span class="text-xs text-slate-500">${escapeHTML(item.company)}</span></td>
+          <td class="p-3"><b>${escapeHTML(item.phone)}</b><br><span class="text-xs text-slate-500">LINE: ${escapeHTML(item.lineId)}</span></td>
+          <td class="p-3"><b>${escapeHTML(item.projectZone)}</b><br><span class="text-xs text-purple-600">${escapeHTML(item.propType)}</span></td>
+          <td class="p-3"><p class="text-xs text-slate-600">${escapeHTML(item.details)}</p><b class="text-emerald-600">฿${Number(item.price || 0).toLocaleString()}</b></td>
           <td class="p-3">${formatImageLinks(item.imagesLink)}</td>
-          <td class="p-3"><span class="px-2 py-1 rounded text-xs bg-purple-100 text-purple-800">${item.commissionType}</span></td>
-          <td class="p-3 text-center"><button onclick="deleteRow('${item.id}', 'agent')" class="p-1.5 rounded-lg bg-rose-50 text-rose-700 text-xs">🗑️ ลบ</button></td>
+          <td class="p-3 space-y-1.5">
+            <select onchange="changeStatus('${escapeHTML(item.id)}', this.value, 'agent')" class="w-full p-2 rounded-xl text-xs font-bold border outline-none cursor-pointer ${statusClass}">
+              <option value="ว่าง" ${currentStatus === 'ว่าง' ? 'selected' : ''}>🟢 ว่าง</option>
+              <option value="ติดจอง" ${currentStatus === 'ติดจอง' ? 'selected' : ''}>🟡 ติดจอง</option>
+              <option value="จับคู่แล้ว" ${currentStatus === 'จับคู่แล้ว' ? 'selected' : ''}>✅ จับคู่แล้ว</option>
+            </select>
+            <select onchange="manualMatch('${escapeHTML(item.id)}', this.value, 'agent')" class="w-full p-2 rounded-xl text-xs border border-slate-200 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-purple-500">
+              ${buildBuyerOptions(matchedBuyer)}
+            </select>
+          </td>
+          <td class="p-3 text-center"><button onclick="deleteRow('${escapeHTML(item.id)}', 'agent')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition">🗑️ ลบ</button></td>
         </tr>`;
       });
       document.getElementById('agentCount').textContent = `ทั้งหมด ${agentList.length} รายการ`;
     }
 
-    function changeStatus(propId, status) {
-      callAdminAPI('updateStatus', { row: propId, status }).then(res => { if(!res.success) alert('อัปเดตสถานะไม่สำเร็จ'); });
+    // ฟังก์ชันเปลี่ยนสถานะ (ว่าง / ติดจอง / จับคู่แล้ว)
+    function changeStatus(propId, status, tabType = 'inv') {
+      const targetList = tabType === 'inv' ? adminData.inventory : adminData.coAgents;
+      const keyName = tabType === 'inv' ? 'propId' : 'id';
+      const item = targetList.find(i => i[keyName] === propId);
+      if (item) item.status = status;
+      filterData();
+
+      callAdminAPI('updateStatus', { row: propId, propId: propId, status: status, tabType: tabType }).then(res => { 
+        if (res.success) {
+          showToast(`✅ อัปเดตสถานะ ${propId} เป็น "${status}" เรียบร้อย`);
+        } else {
+          showToast(`❌ อัปเดตสถานะไม่สำเร็จ: ${res.message || ''}`, true);
+        }
+      });
+    }
+
+    // ฟังก์ชันจับคู่ลูกค้าแบบ Manual
+    function manualMatch(propId, buyerId, tabType = 'inv') {
+      const targetList = tabType === 'inv' ? adminData.inventory : adminData.coAgents;
+      const keyName = tabType === 'inv' ? 'propId' : 'id';
+      const item = targetList.find(i => i[keyName] === propId);
+
+      // หากเลือกลูกค้า ให้เปลี่ยนสถานะเป็น "จับคู่แล้ว" อัตโนมัติ หากยกเลิกให้กลับเป็น "ว่าง"
+      const newStatus = buyerId ? 'จับคู่แล้ว' : 'ว่าง';
+      if (item) {
+        item.matchedBuyerId = buyerId;
+        item.status = newStatus;
+      }
+      filterData();
+
+      callAdminAPI('manualMatch', { propId: propId, buyerId: buyerId, status: newStatus, tabType: tabType }).then(res => {
+        if (res.success) {
+          showToast(buyerId ? `🤝 จับคู่ห้อง ${propId} กับลูกค้า ${buyerId} สำเร็จ!` : `🔄 ยกเลิกการจับคู่ห้อง ${propId} แล้ว`);
+        } else {
+          showToast(`❌ บันทึกการจับคู่ไม่สำเร็จ กรุณาเช็ค gateway.js`, true);
+        }
+      });
     }
 
     function deleteRow(id, tabType) {
@@ -173,6 +338,7 @@
           else if (tabType === 'buyer') adminData.buyers = adminData.buyers.filter(i => i.leadId !== id);
           else adminData.coAgents = adminData.coAgents.filter(i => i.id !== id);
           filterData();
+          showToast(`🗑️ ลบรายการ ${id} เรียบร้อยแล้ว`);
         }
       });
     }
