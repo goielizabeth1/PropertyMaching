@@ -665,9 +665,31 @@
       grid.innerHTML = list.map(item => {
         const cover = getSmartCoverImage(item);
         const typeBadgeColor = String(item.type).includes('เช่า') ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white';
+        
+        // ตรวจสอบสถานะการจับคู่จากแอดมิน
+        const statusStr = String(item.status || 'ว่าง');
+        const isMatched = statusStr.includes('จับคู่') || statusStr.includes('ปิด') || statusStr.includes('Sold');
+        const isReserved = statusStr.includes('ติดจอง');
+
+        let statusTextHtml = `<span class="text-emerald-600 font-bold">✓ ว่างพร้อมนัดชม</span>`;
+        let actionBtnHtml = `
+          <button type="button" onclick="inquireProperty('${escapeHTML(item.id)}', '${escapeHTML(item.project)}', '${escapeHTML(item.zone)}', ${Number(item.price)})" 
+            class="w-full py-3 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-sm transition shadow-sm flex items-center justify-center gap-1.5">
+            <span>💬</span> สนใจห้องนี้ / ขอดูรูปจริง
+          </button>`;
+
+        if (isMatched) {
+          statusTextHtml = `<span class="text-rose-600 font-bold">🔒 จับคู่ลูกค้าแล้ว</span>`;
+          actionBtnHtml = `
+            <button type="button" disabled class="w-full py-3 rounded-xl bg-slate-200 text-slate-500 font-bold text-sm cursor-not-allowed flex items-center justify-center gap-1.5">
+              <span>✅</span> ห้องนี้ได้ผู้เช่า/ผู้ซื้อแล้ว
+            </button>`;
+        } else if (isReserved) {
+          statusTextHtml = `<span class="text-amber-600 font-bold">⏳ ติดจอง (สอบถามคิวสำรองได้)</span>`;
+        }
 
         return `
-          <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group">
+          <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group ${isMatched ? 'opacity-75' : ''}">
             <div class="relative h-56 bg-slate-900 overflow-hidden">
               <img src="${escapeHTML(cover.url)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
@@ -698,20 +720,16 @@
 
                 <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200/70 mb-3 text-[11px] text-slate-500">
                   <span>🔒 เบอร์โทร/LINE เจ้าของถูกซ่อน</span>
-                  <span class="text-emerald-600 font-bold">✓ ว่างพร้อมนัดชม</span>
+                  ${statusTextHtml}
                 </div>
 
-                <button type="button" onclick="inquireProperty('${escapeHTML(item.id)}', '${escapeHTML(item.project)}', '${escapeHTML(item.zone)}', ${Number(item.price)})" 
-                  class="w-full py-3 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-sm transition shadow-sm flex items-center justify-center gap-1.5">
-                  <span>💬</span> สนใจห้องนี้ / ขอดูรูปจริง
-                </button>
+                ${actionBtnHtml}
               </div>
             </div>
           </div>
         `;
       }).join('');
     }
-
     function filterCatalog() {
       const q = document.getElementById('catalogSearch').value.toLowerCase().trim();
       const t = document.getElementById('catalogTypeFilter').value;
